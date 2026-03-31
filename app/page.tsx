@@ -6,6 +6,7 @@ import ElevationProfile from './components/ElevationProfile'
 import type { ElevPoint, HardestClimb } from './components/ElevationProfile'
 import WeatherPanel from './components/WeatherPanel'
 import type { HourlyWeather } from './components/WeatherPanel'
+import ClothingAdvice from './components/ClothingAdvice'
 
 const RouteMap = dynamic(() => import('./components/RouteMap'), {
   ssr: false,
@@ -532,6 +533,9 @@ export default function Page() {
             )}
             {rideHours.length > 0 && (
               <WeatherPanel hours={rideHours} durationHours={durationHours} />
+            )}
+            {rideHours.length > 0 && (
+              <ClothingAdvice hours={rideHours} />
             )}
             {!weatherLoading && !weatherError && allWeather && rideHours.length === 0 && (
               <div className="rounded-2xl bg-white border border-stone-200 px-5 py-6 text-sm text-stone-400 text-center">
