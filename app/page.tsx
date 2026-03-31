@@ -1,65 +1,289 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useCallback, useRef } from 'react'
+import dynamic from 'next/dynamic'
+
+const RouteMap = dynamic(() => import('./components/RouteMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center h-[420px] rounded-xl bg-stone-100 text-stone-400 text-sm">
+      Kaart laden…
+    </div>
+  ),
+})
+
+type GpxPoint = { lat: number; lon: number; ele: number }
+
+type RouteData = {
+  points: GpxPoint[]
+  distanceKm: number
+  elevationGain: number
+  startLat: number
+  startLon: number
+}
+
+function parseGpx(text: string): RouteData {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const GpxParser = require('gpxparser')
+  const parser = new GpxParser()
+  parser.parse(text)
+
+  const track = parser.tracks?.[0]
+  if (!track) throw new Error('Geen track gevonden in GPX-bestand.')
+
+  const points: GpxPoint[] = track.points.map(
+    (p: { lat: number; lon: number; ele: number }) => ({
+      lat: p.lat,
+      lon: p.lon,
+      ele: p.ele ?? 0,
+    }),
+  )
+
+  const distanceKm = (track.distance?.total ?? 0) / 1000
+
+  let elevationGain = 0
+  for (let i = 1; i < points.length; i++) {
+    const diff = points[i].ele - points[i - 1].ele
+    if (diff > 0) elevationGain += diff
+  }
+
+  return {
+    points,
+    distanceKm,
+    elevationGain: Math.round(elevationGain),
+    startLat: points[0].lat,
+    startLon: points[0].lon,
+  }
+}
+
+function BikeIcon() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <svg
+      viewBox="0 0 64 64"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-16 h-16 opacity-30"
+      aria-hidden="true"
+    >
+      <circle cx="14" cy="44" r="10" stroke="#f97316" strokeWidth="3" />
+      <circle cx="50" cy="44" r="10" stroke="#f97316" strokeWidth="3" />
+      <path
+        d="M14 44 L28 20 L36 20 L50 44"
+        stroke="#f97316"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M28 20 L32 32 L50 44"
+        stroke="#f97316"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M32 20 L38 16 L44 20"
+        stroke="#f97316"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+export default function Page() {
+  const [route, setRoute] = useState<RouteData | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [dragging, setDragging] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const handleFile = useCallback((file: File) => {
+    if (!file.name.endsWith('.gpx')) {
+      setError('Alleen .gpx bestanden worden ondersteund.')
+      return
+    }
+    setError(null)
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const text = e.target?.result as string
+        const data = parseGpx(text)
+        setRoute(data)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Kon GPX niet verwerken.')
+      }
+    }
+    reader.readAsText(file)
+  }, [])
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setDragging(false)
+      const file = e.dataTransfer.files[0]
+      if (file) handleFile(file)
+    },
+    [handleFile],
+  )
+
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) handleFile(file)
+  }
+
+  const mapPoints: [number, number][] = route
+    ? route.points.map((p) => [p.lat, p.lon])
+    : []
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ background: '#fafaf9' }}>
+      {/* Header */}
+      <header style={{ background: '#1a1a2e' }} className="px-6 py-8">
+        <div className="max-w-3xl mx-auto">
+          <h1
+            className="text-4xl font-bold tracking-tight text-white"
+            style={{ fontFamily: 'Sora, sans-serif' }}
+          >
+            Knecht
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mt-1 text-sm font-medium" style={{ color: '#f97316' }}>
+            Upload je route. Weet wat je mee moet.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </header>
+
+      {/* Main content */}
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-10 space-y-8">
+        {/* Upload zone */}
+        {!route && (
+          <div
+            role="button"
+            tabIndex={0}
+            aria-label="GPX bestand uploaden"
+            onClick={() => inputRef.current?.click()}
+            onKeyDown={(e) => e.key === 'Enter' && inputRef.current?.click()}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setDragging(true)
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={onDrop}
+            className={`
+              relative flex flex-col items-center justify-center gap-4
+              rounded-2xl border-2 border-dashed px-8 py-16 cursor-pointer
+              transition-all duration-200 select-none
+              ${
+                dragging
+                  ? 'border-orange-400 bg-orange-50'
+                  : 'border-stone-300 bg-white hover:border-orange-300 hover:bg-orange-50/40'
+              }
+            `}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            <BikeIcon />
+            <div className="text-center">
+              <p className="text-base font-semibold text-stone-700">
+                Sleep je GPX-bestand hierheen
+              </p>
+              <p className="text-sm text-stone-400 mt-1">
+                of klik om te uploaden
+              </p>
+            </div>
+            <span
+              className="text-xs font-medium px-3 py-1 rounded-full"
+              style={{ background: '#1a1a2e', color: '#f97316' }}
+            >
+              .gpx
+            </span>
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".gpx"
+              className="hidden"
+              onChange={onInputChange}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {route && (
+          <>
+            {/* Stats bar */}
+            <div
+              className="rounded-2xl px-6 py-5 grid grid-cols-3 gap-4"
+              style={{ background: '#1a1a2e' }}
+            >
+              <div>
+                <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
+                  Afstand
+                </p>
+                <p
+                  className="text-2xl font-bold mt-1 text-white"
+                  style={{ fontFamily: 'Sora, sans-serif' }}
+                >
+                  {route.distanceKm.toFixed(1)}{' '}
+                  <span className="text-base font-normal text-stone-400">km</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
+                  Hoogtemeters
+                </p>
+                <p
+                  className="text-2xl font-bold mt-1 text-white"
+                  style={{ fontFamily: 'Sora, sans-serif' }}
+                >
+                  {route.elevationGain.toLocaleString('nl-NL')}{' '}
+                  <span className="text-base font-normal text-stone-400">m</span>
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
+                  Startlocatie
+                </p>
+                <p className="text-sm font-semibold mt-1 text-white leading-snug">
+                  {route.startLat.toFixed(4)}°N
+                  <br />
+                  {route.startLon.toFixed(4)}°E
+                </p>
+              </div>
+            </div>
+
+            {/* Map */}
+            <div className="rounded-2xl overflow-hidden shadow-sm border border-stone-200">
+              <RouteMap points={mapPoints} />
+            </div>
+
+            {/* Reset knop */}
+            <div className="flex justify-end">
+              <button
+                onClick={() => {
+                  setRoute(null)
+                  setError(null)
+                  if (inputRef.current) inputRef.current.value = ''
+                }}
+                className="text-sm text-stone-400 hover:text-stone-700 transition-colors underline underline-offset-2"
+              >
+                Andere route laden
+              </button>
+            </div>
+          </>
+        )}
       </main>
+
+      {/* Footer */}
+      <footer
+        className="text-center py-5 text-xs text-stone-400 border-t border-stone-200"
+        style={{ background: '#fafaf9' }}
+      >
+        Knecht — Jouw digitale wielrenknecht
+      </footer>
     </div>
-  );
+  )
 }
