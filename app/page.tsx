@@ -8,6 +8,7 @@ import WeatherPanel from './components/WeatherPanel'
 import type { HourlyWeather } from './components/WeatherPanel'
 import ClothingAdvice from './components/ClothingAdvice'
 import NutritionAdvice from './components/NutritionAdvice'
+import PackingChecklist from './components/PackingChecklist'
 
 const RouteMap = dynamic(() => import('./components/RouteMap'), {
   ssr: false,
@@ -550,6 +551,15 @@ export default function Page() {
                 Geen weersdata beschikbaar voor de gekozen datum en tijd. Kies een datum
                 binnen de komende 3 dagen.
               </div>
+            )}
+
+            {/* ── Packing checklist ─────────────────────────────────── */}
+            {rideHours.length > 0 && route && (
+              <PackingChecklist
+                hours={rideHours}
+                distanceKm={route.distanceKm}
+                elevationGain={route.elevationGain}
+              />
             )}
 
             {/* Reset */}
