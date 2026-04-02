@@ -27,15 +27,15 @@ export default function RouteMap({ points }: { points: LatLng[] }) {
   return (
     <MapContainer
       bounds={bounds}
-      style={{ height: '420px', width: '100%' }}
-      className="rounded-xl z-0"
+      style={{ height: '380px', width: '100%' }}
+      className="z-0"
       scrollWheelZoom={false}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <Polyline positions={points} color="#f97316" weight={4} opacity={0.9} />
+      <Polyline positions={points} color="#4a6fa5" weight={4} opacity={0.9} />
       <FitBounds bounds={bounds} />
     </MapContainer>
   )

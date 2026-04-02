@@ -3,10 +3,9 @@
 import type { HourlyWeather } from './WeatherPanel'
 
 type Category = {
-  emoji: string
   label: string
   items: string[]
-  accent?: boolean // extra's krijgen oranje stijl
+  accent?: boolean
 }
 
 function getAdvice(hours: HourlyWeather[]): { categories: Category[]; avgTemp: number } {
@@ -37,19 +36,22 @@ function getAdvice(hours: HourlyWeather[]): { categories: Category[]; avgTemp: n
 
   // Extra's
   const extras: string[] = []
-  if (maxWind > 30) extras.push('Windvest mee, het gaat flink waaien')
+  if (maxWind > 30) extras.push('Windvest mee — het gaat flink waaien')
   if (maxPrecip >= 70)
-    extras.push('Regenjack aan — of plan B: de rollen (geen schande)')
-  else if (maxPrecip >= 40) extras.push('Regenjas in je achterzak')
-  if (tempDiff >= 8) extras.push('Kleed je in lagen, het verschil is groot vandaag')
+    extras.push('Regenjack aan. Of gewoon doorrijden, het is maar water.')
+  else if (maxPrecip >= 40)
+    extras.push('Regenjack in je achterzak. Kans is er.')
+  if (avgTemp < 5)
+    extras.push('Je tenen zullen je dankbaar zijn bij km 60. Overschoenen aan.')
+  if (tempDiff >= 8) extras.push('Kleed je in lagen — het verschil is groot vandaag')
 
   const categories: Category[] = [
-    { emoji: '🧥', label: 'Bovenlijf', items: bovenlijf },
-    { emoji: '🩳', label: 'Onderlijf', items: onderlijf },
-    { emoji: '🧤', label: 'Handen & voeten', items: extremiteiten },
+    { label: 'Bovenlijf', items: bovenlijf },
+    { label: 'Onderlijf', items: onderlijf },
+    { label: 'Handen & voeten', items: extremiteiten },
   ]
   if (extras.length > 0) {
-    categories.push({ emoji: '⚡', label: "Extra's", items: extras, accent: true })
+    categories.push({ label: "Extra's", items: extras, accent: true })
   }
 
   return { categories, avgTemp }
@@ -61,15 +63,21 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
   const { categories, avgTemp } = getAdvice(hours)
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 shadow-sm">
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+    >
       {/* Header */}
-      <div className="px-5 py-4" style={{ background: '#1a1a2e' }}>
-        <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">
-          Wat trek je aan?
+      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+        <p
+          className="text-xs font-medium uppercase mb-1"
+          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+        >
+          Kit check
         </p>
-        <p className="text-sm text-white">
-          Op basis van gem.{' '}
-          <span className="font-semibold" style={{ color: '#f97316' }}>
+        <p className="text-sm" style={{ color: '#1a1a2e' }}>
+          Gem.{' '}
+          <span className="font-semibold" style={{ color: '#4a6fa5' }}>
             {Math.round(avgTemp)}°
           </span>{' '}
           tijdens de rit
@@ -77,20 +85,20 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
       </div>
 
       {/* Category rows */}
-      <div className="bg-white divide-y divide-stone-100">
+      <div className="divide-y" style={{ borderColor: '#f0ebe4' }}>
         {categories.map((cat) => (
           <div
             key={cat.label}
             className="flex gap-4 px-5 py-4"
-            style={cat.accent ? { background: '#fff7ed' } : undefined}
+            style={cat.accent ? { background: '#f0f4fa' } : undefined}
           >
-            <span className="text-2xl leading-none shrink-0 mt-0.5" aria-hidden="true">
-              {cat.emoji}
-            </span>
             <div className="flex-1 min-w-0">
               <p
-                className="text-xs font-semibold uppercase tracking-widest mb-2"
-                style={{ color: cat.accent ? '#f97316' : '#a8a29e' }}
+                className="text-xs font-medium uppercase mb-2"
+                style={{
+                  letterSpacing: '0.05em',
+                  color: cat.accent ? '#4a6fa5' : '#7c7872',
+                }}
               >
                 {cat.label}
               </p>
@@ -101,15 +109,8 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
                     className="text-sm px-3 py-1 rounded-full"
                     style={
                       cat.accent
-                        ? {
-                            background: '#ffedd5',
-                            color: '#c2410c',
-                            fontWeight: 500,
-                          }
-                        : {
-                            background: '#f5f5f4',
-                            color: '#44403c',
-                          }
+                        ? { background: '#dce9f5', color: '#2d5187', fontWeight: 500 }
+                        : { background: '#f5f0eb', color: '#3d3a36' }
                     }
                   >
                     {item}

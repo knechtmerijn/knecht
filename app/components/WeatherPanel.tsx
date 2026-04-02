@@ -31,7 +31,6 @@ function windDegToCompass(deg: number): string {
   return dirs[Math.round(deg / 22.5) % 16]
 }
 
-// ↑ rotated by winddir degrees = arrow pointing toward wind source (meteorological convention)
 function WindArrow({ deg }: { deg: number }) {
   return (
     <span
@@ -41,7 +40,7 @@ function WindArrow({ deg }: { deg: number }) {
         transform: `rotate(${deg}deg)`,
         fontSize: '11px',
         lineHeight: 1,
-        color: '#78716c',
+        color: '#7c7872',
       }}
     >
       ↑
@@ -50,16 +49,16 @@ function WindArrow({ deg }: { deg: number }) {
 }
 
 function PrecipBar({ prob }: { prob: number }) {
-  const color = prob >= 60 ? '#3b82f6' : prob >= 30 ? '#93c5fd' : '#bfdbfe'
+  const color = prob >= 60 ? '#4a6fa5' : prob >= 30 ? '#7fa3cc' : '#c0d4e8'
   return (
     <div className="flex flex-col items-center gap-0.5 w-full">
-      <div className="w-full h-1 rounded-full bg-stone-200 overflow-hidden">
+      <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: '#e0dbd5' }}>
         <div
           style={{ width: `${prob}%`, background: color, transition: 'width 0.3s' }}
           className="h-full rounded-full"
         />
       </div>
-      <span className="text-xs" style={{ color: prob >= 30 ? '#3b82f6' : '#a8a29e' }}>
+      <span className="text-xs" style={{ color: prob >= 30 ? '#4a6fa5' : '#7c7872' }}>
         {prob}%
       </span>
     </div>
@@ -91,43 +90,46 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
   const midCompass = windDegToCompass(mid.winddir)
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 shadow-sm">
-      {/* Summary bar */}
-      <div
-        className="px-5 py-4"
-        style={{ background: '#1a1a2e' }}
-      >
-        <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-2">
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+    >
+      {/* Header */}
+      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+        <p
+          className="text-xs font-medium uppercase mb-1"
+          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+        >
           Weer · {formatDuration(durationHours)} rijden
         </p>
-        <p className="text-sm text-white leading-relaxed">
-          Bij vertrek{' '}
-          <span className="font-semibold" style={{ color: '#f97316' }}>
+        <p className="text-sm" style={{ color: '#1a1a2e' }}>
+          Vertrek{' '}
+          <span className="font-semibold" style={{ color: '#4a6fa5' }}>
             {Math.round(first.temp)}°
           </span>
           {hours.length > 2 && (
             <>
               {', halverwege '}
-              <span className="font-semibold" style={{ color: '#f97316' }}>
+              <span className="font-semibold" style={{ color: '#4a6fa5' }}>
                 {Math.round(mid.temp)}°
               </span>
             </>
           )}
-          {', wind '}
-          <span className="font-semibold">
+          {' · wind '}
+          <span className="font-semibold" style={{ color: '#1a1a2e' }}>
             {midCompass} {Math.round(mid.windspeed)} km/u
           </span>
           {mid.precipProb >= 30 && (
-            <span className="text-blue-300">
-              {' '}· {mid.precipProb}% kans op neerslag
+            <span style={{ color: '#4a6fa5' }}>
+              {' '}· {mid.precipProb}% neerslag
             </span>
           )}
         </p>
       </div>
 
       {/* Hourly cards – horizontal scroll */}
-      <div className="bg-white px-4 py-4 overflow-x-auto">
-        <div className="flex gap-2.5" style={{ minWidth: 'max-content' }}>
+      <div className="px-4 py-4 overflow-x-auto">
+        <div className="flex gap-2" style={{ minWidth: 'max-content' }}>
           {hours.map((h) => {
             const { icon, label } = getWeatherInfo(h.weathercode)
             const compass = windDegToCompass(h.winddir)
@@ -135,39 +137,32 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
               <div
                 key={h.time}
                 title={label}
-                className="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border border-stone-100 bg-stone-50"
-                style={{ minWidth: '76px' }}
+                className="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl"
+                style={{
+                  minWidth: '72px',
+                  background: '#f9f7f4',
+                  border: '1px solid #e0dbd5',
+                }}
               >
-                {/* Time */}
-                <span className="text-xs font-semibold text-stone-400">
+                <span className="text-xs font-medium" style={{ color: '#7c7872' }}>
                   {formatHourLabel(h.time)}
                 </span>
-
-                {/* Weather icon */}
                 <span className="text-2xl leading-none" role="img" aria-label={label}>
                   {icon}
                 </span>
-
-                {/* Temperature */}
                 <span
                   className="text-lg font-bold leading-none"
                   style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
                 >
                   {Math.round(h.temp)}°
                 </span>
-
-                {/* Wind direction */}
-                <div className="flex items-center gap-1 text-xs text-stone-500">
+                <div className="flex items-center gap-1 text-xs" style={{ color: '#7c7872' }}>
                   <WindArrow deg={h.winddir} />
                   <span>{compass}</span>
                 </div>
-
-                {/* Wind speed */}
-                <span className="text-xs text-stone-400">
+                <span className="text-xs" style={{ color: '#7c7872' }}>
                   {Math.round(h.windspeed)} km/u
                 </span>
-
-                {/* Precipitation bar */}
                 <PrecipBar prob={h.precipProb ?? 0} />
               </div>
             )

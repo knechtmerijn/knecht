@@ -15,7 +15,6 @@ type Stat = {
 }
 
 type Block = {
-  emoji: string
   label: string
   detail: string
   warning?: boolean
@@ -32,18 +31,15 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
   let carbsBlock: Block
   if (durationMin < 60) {
     carbsBlock = {
-      emoji: '💧',
       label: 'Koolhydraten',
       detail: 'Alleen een bidon water is genoeg.',
     }
   } else if (durationMin < 90) {
     carbsBlock = {
-      emoji: '🍬',
       label: 'Koolhydraten',
       detail: 'Neem 1 gel of reep mee voor het laatste half uur.',
     }
   } else {
-    // One item (gel or bar) every 30 min after the first hour
     const nItems = Math.max(1, Math.ceil((durationHours - 1) * 2))
     const nGels = Math.ceil(nItems / 2)
     const nRepen = Math.floor(nItems / 2)
@@ -57,9 +53,8 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
       .join(' + ')
 
     carbsBlock = {
-      emoji: '🍬',
       label: 'Koolhydraten',
-      detail: `Neem ${totalCarbs}g koolhydraten mee: ${itemStr}. Eerste gel na 45 min, daarna elke 30 min.`,
+      detail: `${totalCarbs}g onderweg: ${itemStr}. Eerste gel na 45 min, daarna elke 30 min.`,
     }
   }
 
@@ -67,9 +62,8 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
   let drinkBlock: Block
   if (maxTemp > 30) {
     drinkBlock = {
-      emoji: '🚰',
       label: 'Drinken',
-      detail: 'Plan een waterstop in — 2 bidons is niet genoeg bij deze hitte.',
+      detail: 'Plan een waterstop in. 2 bidons is niet genoeg. Dehydratie is geen bonificatie.',
       warning: true,
     }
   } else {
@@ -77,9 +71,8 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
     const totalMl = Math.round(mlPerHour * durationHours)
     const nBidons = Math.ceil(totalMl / 500)
     drinkBlock = {
-      emoji: '🚰',
       label: 'Drinken',
-      detail: `${totalMl} ml — ${nBidons} bidon${nBidons > 1 ? 's' : ''}${maxTemp > 25 ? ' (het is warm, drink meer)' : ''}.`,
+      detail: `${totalMl} ml — ${nBidons} bidon${nBidons > 1 ? 's' : ''}${maxTemp > 25 ? '. Extra bidon. Dehydratie is geen bonificatie.' : '.'}`,
     }
   }
 
@@ -87,13 +80,12 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
   const needsElectrolytes = durationHours > 2 || maxTemp > 25
   const electrolytesBlock: Block | null = needsElectrolytes
     ? {
-        emoji: '⚡',
         label: 'Elektrolyten',
-        detail: 'Voeg een elektrolytentablet toe aan minstens 1 bidon.',
+        detail: 'Elektrolytentablet in minstens 1 bidon.',
       }
     : null
 
-  // ── Stats row ────────────────────────────────────────────────────────────────
+  // ── Stats ───────────────────────────────────────────────────────────────────
   const stats: Stat[] = [{ value: kcal.toLocaleString('nl-NL'), unit: 'kcal', label: 'Verbruik' }]
 
   if (durationMin >= 90) {
@@ -101,7 +93,7 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
     const nGels = Math.ceil(nItems / 2)
     const nRepen = Math.floor(nItems / 2)
     const totalCarbs = nGels * 25 + nRepen * 30
-    stats.push({ value: `${totalCarbs}`, unit: 'g', label: 'Koolhydraten' })
+    stats.push({ value: `${totalCarbs}`, unit: 'g koolh.', label: 'Onderweg' })
   }
 
   if (maxTemp <= 30) {
@@ -122,39 +114,53 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
   const { stats, blocks } = calcNutrition(hours, distanceKm, durationHours)
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 shadow-sm">
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+    >
       {/* Header */}
-      <div className="px-5 py-4" style={{ background: '#1a1a2e' }}>
-        <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">
-          Wat neem je mee?
+      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+        <p
+          className="text-xs font-medium uppercase mb-1"
+          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+        >
+          Achterzakken
         </p>
-        <p className="text-sm text-white">
-          Op basis van{' '}
-          <span className="font-semibold" style={{ color: '#f97316' }}>
+        <p className="text-sm" style={{ color: '#1a1a2e' }}>
+          Voor{' '}
+          <span className="font-semibold" style={{ color: '#4a6fa5' }}>
             {distanceKm.toFixed(0)} km
           </span>{' '}
           en{' '}
-          <span className="font-semibold" style={{ color: '#f97316' }}>
-            {Math.floor(durationHours)}u{' '}
+          <span className="font-semibold" style={{ color: '#4a6fa5' }}>
+            {Math.floor(durationHours)}u
             {Math.round((durationHours % 1) * 60)
               .toString()
-              .padStart(2, '0')}
-          </span>{' '}
+              .padStart(2, '0')}{' '}
+          </span>
           rijden
         </p>
       </div>
 
       {/* Stats row */}
       <div
-        className="grid border-b border-stone-200"
+        className="grid border-b"
         style={{
           gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
-          background: '#f5f5f4',
+          background: '#f9f7f4',
+          borderColor: '#e0dbd5',
         }}
       >
         {stats.map((s) => (
-          <div key={s.label} className="px-5 py-4 border-r border-stone-200 last:border-r-0">
-            <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-0.5">
+          <div
+            key={s.label}
+            className="px-5 py-4 border-r last:border-r-0"
+            style={{ borderColor: '#e0dbd5' }}
+          >
+            <p
+              className="text-xs font-medium uppercase mb-0.5"
+              style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+            >
               {s.label}
             </p>
             <p
@@ -162,37 +168,37 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
               style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
             >
               {s.value}{' '}
-              <span className="text-sm font-normal text-stone-400">{s.unit}</span>
+              <span className="text-sm font-normal" style={{ color: '#7c7872' }}>
+                {s.unit}
+              </span>
             </p>
           </div>
         ))}
       </div>
 
       {/* Detail blocks */}
-      <div className="bg-white divide-y divide-stone-100">
+      <div className="divide-y" style={{ borderColor: '#f0ebe4' }}>
         {blocks.map((b) => (
           <div
             key={b.label}
-            className="flex gap-4 px-5 py-4"
-            style={b.warning ? { background: '#fff7ed' } : undefined}
+            className="px-5 py-4"
+            style={b.warning ? { background: '#fdf6ee' } : undefined}
           >
-            <span className="text-2xl leading-none shrink-0 mt-0.5" aria-hidden="true">
-              {b.emoji}
-            </span>
-            <div className="flex-1 min-w-0">
-              <p
-                className="text-xs font-semibold uppercase tracking-widest mb-1"
-                style={{ color: b.warning ? '#f97316' : '#a8a29e' }}
-              >
-                {b.label}
-              </p>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ color: b.warning ? '#c2410c' : '#44403c' }}
-              >
-                {b.detail}
-              </p>
-            </div>
+            <p
+              className="text-xs font-medium uppercase mb-1"
+              style={{
+                letterSpacing: '0.05em',
+                color: b.warning ? '#b45309' : '#7c7872',
+              }}
+            >
+              {b.label}
+            </p>
+            <p
+              className="text-sm leading-relaxed"
+              style={{ color: b.warning ? '#92400e' : '#3d3a36' }}
+            >
+              {b.detail}
+            </p>
           </div>
         ))}
       </div>

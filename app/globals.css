@@ -11,11 +11,20 @@
 }
 
 body {
-  background: #fafaf9;
-  color: #1a1a2e;
+  background: #f5f0eb;
+  color: #3d3a36;
   font-family: var(--font-dm-sans);
 }
 
 h1, h2, h3, h4 {
   font-family: var(--font-sora);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up {
+  animation: fadeUp 0.4s ease both;
 }

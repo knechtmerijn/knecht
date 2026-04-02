@@ -13,7 +13,10 @@ import PackingChecklist from './components/PackingChecklist'
 const RouteMap = dynamic(() => import('./components/RouteMap'), {
   ssr: false,
   loading: () => (
-    <div className="flex items-center justify-center h-[420px] rounded-xl bg-stone-100 text-stone-400 text-sm">
+    <div
+      className="flex items-center justify-center h-[380px] rounded-xl text-sm"
+      style={{ background: '#f9f7f4', color: '#7c7872' }}
+    >
       Kaart laden…
     </div>
   ),
@@ -169,6 +172,33 @@ function parseGpx(text: string): RouteData {
   }
 }
 
+// ─── Logo icon (bidon + gel) ──────────────────────────────────────────────────
+
+function LogoIcon() {
+  return (
+    <svg
+      viewBox="0 0 32 26"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-6 h-6 shrink-0"
+      aria-hidden="true"
+      stroke="#4a6fa5"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Bidon */}
+      <rect x="2" y="9" width="11" height="15" rx="2.5" />
+      <rect x="4" y="5" width="7" height="5" rx="1" />
+      <rect x="5.5" y="2.5" width="4" height="3" rx="0.75" />
+      <line x1="2" y1="15" x2="13" y2="15" />
+      {/* Gel packet */}
+      <rect x="18" y="8" width="12" height="12" rx="2" />
+      <line x1="24" y1="8" x2="24" y2="20" />
+    </svg>
+  )
+}
+
 // ─── Upload zone bike icon ────────────────────────────────────────────────────
 
 function BikeIcon() {
@@ -177,28 +207,24 @@ function BikeIcon() {
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="w-16 h-16 opacity-30"
+      className="w-14 h-14"
       aria-hidden="true"
+      stroke="#4a6fa5"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      opacity={0.4}
     >
-      <circle cx="14" cy="44" r="10" stroke="#f97316" strokeWidth="3" />
-      <circle cx="50" cy="44" r="10" stroke="#f97316" strokeWidth="3" />
-      <path
-        d="M14 44 L28 20 L36 20 L50 44"
-        stroke="#f97316" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-      />
-      <path
-        d="M28 20 L32 32 L50 44"
-        stroke="#f97316" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
-      />
-      <path
-        d="M32 20 L38 16 L44 20"
-        stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-      />
+      <circle cx="14" cy="44" r="10" />
+      <circle cx="50" cy="44" r="10" />
+      <path d="M14 44 L28 20 L36 20 L50 44" />
+      <path d="M28 20 L32 32 L50 44" />
+      <path d="M32 20 L38 16 L44 20" />
     </svg>
   )
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getTomorrowDate(): string {
   const d = new Date()
@@ -206,8 +232,11 @@ function getTomorrowDate(): string {
   return d.toISOString().split('T')[0]
 }
 
+// ─── Main page ────────────────────────────────────────────────────────────────
+
 export default function Page() {
   const [route, setRoute] = useState<RouteData | null>(null)
+  const [fileName, setFileName] = useState<string>('')
   const [error, setError] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -288,6 +317,7 @@ export default function Page() {
       return
     }
     setError(null)
+    setFileName(file.name)
     const reader = new FileReader()
     reader.onload = (e) => {
       try {
@@ -314,26 +344,40 @@ export default function Page() {
     ? route.points.map((p) => [p.lat, p.lon])
     : []
 
+  const resetRoute = () => {
+    setRoute(null)
+    setFileName('')
+    setError(null)
+    setAllWeather(null)
+    if (inputRef.current) inputRef.current.value = ''
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#fafaf9' }}>
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <header style={{ background: '#1a1a2e' }} className="px-6 py-8">
-        <div className="max-w-3xl mx-auto">
-          <h1
-            className="text-4xl font-bold tracking-tight text-white"
-            style={{ fontFamily: 'Sora, sans-serif' }}
-          >
-            Knecht
-          </h1>
-          <p className="mt-1 text-sm font-medium" style={{ color: '#f97316' }}>
-            Upload je route. Weet wat je mee moet.
+      <header className="px-6 pt-8 pb-6" style={{ background: '#f5f0eb' }}>
+        <div className="max-w-[720px] mx-auto">
+          <div className="flex items-center gap-2.5 mb-1">
+            <LogoIcon />
+            <h1
+              className="text-3xl font-bold tracking-tight"
+              style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
+            >
+              Knecht
+            </h1>
+          </div>
+          <p className="text-sm" style={{ color: '#7c7872' }}>
+            Je digitale knecht. Upload, check, rijd.
           </p>
         </div>
       </header>
+      {/* Accent line */}
+      <div style={{ height: '2px', background: '#4a6fa5' }} />
 
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-10 space-y-8">
-        {/* Upload zone */}
+      <main className="flex-1 max-w-[720px] w-full mx-auto px-4 py-10 space-y-6">
+
+        {/* ── Upload zone ─────────────────────────────────────────────────── */}
         {!route && (
           <div
             role="button"
@@ -344,25 +388,29 @@ export default function Page() {
             onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            className={`
-              relative flex flex-col items-center justify-center gap-4
-              rounded-2xl border-2 border-dashed px-8 py-16 cursor-pointer
-              transition-all duration-200 select-none
-              ${dragging
-                ? 'border-orange-400 bg-orange-50'
-                : 'border-stone-300 bg-white hover:border-orange-300 hover:bg-orange-50/40'}
-            `}
+            className="relative flex flex-col items-center justify-center gap-4 rounded-xl px-8 py-16 cursor-pointer transition-all duration-200 select-none"
+            style={{
+              background: '#fff',
+              border: `2px dashed ${dragging ? '#4a6fa5' : '#c9c3bb'}`,
+              backgroundColor: dragging ? '#f0f4fa' : '#fff',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            }}
           >
             <BikeIcon />
             <div className="text-center">
-              <p className="text-base font-semibold text-stone-700">
-                Sleep je GPX-bestand hierheen
+              <p
+                className="text-lg font-semibold"
+                style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
+              >
+                Drop je GPX hier
               </p>
-              <p className="text-sm text-stone-400 mt-1">of klik om te uploaden</p>
+              <p className="text-sm mt-1" style={{ color: '#7c7872' }}>
+                of klik om een bestand te kiezen
+              </p>
             </div>
             <span
               className="text-xs font-medium px-3 py-1 rounded-full"
-              style={{ background: '#1a1a2e', color: '#f97316' }}
+              style={{ background: '#eef3fb', color: '#4a6fa5' }}
             >
               .gpx
             </span>
@@ -376,69 +424,85 @@ export default function Page() {
           </div>
         )}
 
+        {/* ── Compact route bar (after upload) ────────────────────────────── */}
+        {route && (
+          <div
+            className="rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 fade-up"
+            style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                className="w-4 h-4 shrink-0"
+                style={{ stroke: '#4a6fa5' }}
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M9 2H4a1 1 0 00-1 1v10a1 1 0 001 1h8a1 1 0 001-1V6L9 2z" />
+                <path d="M9 2v4h4" />
+              </svg>
+              <span className="text-sm font-medium truncate" style={{ color: '#1a1a2e' }}>
+                {fileName}
+              </span>
+              <span className="text-sm shrink-0" style={{ color: '#7c7872' }}>
+                · {route.distanceKm.toFixed(1)} km
+              </span>
+            </div>
+            <button
+              onClick={resetRoute}
+              className="text-sm shrink-0 transition-colors"
+              style={{ color: '#4a6fa5' }}
+              onMouseOver={(e) => (e.currentTarget.style.color = '#3a5a8a')}
+              onMouseOut={(e) => (e.currentTarget.style.color = '#4a6fa5')}
+            >
+              Andere route laden
+            </button>
+            <input
+              ref={inputRef}
+              type="file"
+              accept=".gpx"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f) }}
+            />
+          </div>
+        )}
+
         {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700">
+          <div
+            className="rounded-xl px-5 py-4 text-sm"
+            style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}
+          >
             {error}
           </div>
         )}
 
         {route && (
           <>
-            {/* Stats bar */}
-            <div
-              className="rounded-2xl px-6 py-5 grid grid-cols-3 gap-4"
-              style={{ background: '#1a1a2e' }}
-            >
-              <div>
-                <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
-                  Afstand
-                </p>
-                <p
-                  className="text-2xl font-bold mt-1 text-white"
-                  style={{ fontFamily: 'Sora, sans-serif' }}
-                >
-                  {route.distanceKm.toFixed(1)}{' '}
-                  <span className="text-base font-normal text-stone-400">km</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
-                  Hoogtemeters
-                </p>
-                <p
-                  className="text-2xl font-bold mt-1 text-white"
-                  style={{ fontFamily: 'Sora, sans-serif' }}
-                >
-                  {route.elevationGain.toLocaleString('nl-NL')}{' '}
-                  <span className="text-base font-normal text-stone-400">m</span>
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium uppercase tracking-widest text-stone-400">
-                  Startlocatie
-                </p>
-                <p className="text-sm font-semibold mt-1 text-white leading-snug">
-                  {route.startLat.toFixed(4)}°N<br />
-                  {route.startLon.toFixed(4)}°E
-                </p>
-              </div>
-            </div>
-
             {/* ── Ride settings ─────────────────────────────────────────── */}
-            <div className="rounded-2xl bg-white border border-stone-200 shadow-sm px-5 py-5">
-              <h2
-                className="text-sm font-semibold uppercase tracking-widest mb-4"
-                style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
+            <div
+              className="rounded-xl px-5 py-5 fade-up"
+              style={{
+                background: '#fff',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                animationDelay: '0.05s',
+              }}
+            >
+              <p
+                className="text-xs font-medium uppercase mb-4"
+                style={{ letterSpacing: '0.05em', color: '#7c7872' }}
               >
                 Rit instellen
-              </h2>
+              </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 {/* Date */}
                 <div>
                   <label
                     htmlFor="ride-date"
-                    className="block text-xs font-medium uppercase tracking-widest text-stone-400 mb-1.5"
+                    className="block text-xs font-medium uppercase mb-1.5"
+                    style={{ letterSpacing: '0.05em', color: '#7c7872' }}
                   >
                     Datum
                   </label>
@@ -447,7 +511,12 @@ export default function Page() {
                     type="date"
                     value={rideDate}
                     onChange={(e) => setRideDate(e.target.value)}
-                    className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      border: '1px solid #e0dbd5',
+                      background: '#f9f7f4',
+                      color: '#1a1a2e',
+                    }}
                   />
                 </div>
 
@@ -455,7 +524,8 @@ export default function Page() {
                 <div>
                   <label
                     htmlFor="ride-time"
-                    className="block text-xs font-medium uppercase tracking-widest text-stone-400 mb-1.5"
+                    className="block text-xs font-medium uppercase mb-1.5"
+                    style={{ letterSpacing: '0.05em', color: '#7c7872' }}
                   >
                     Vertrektijd
                   </label>
@@ -464,7 +534,12 @@ export default function Page() {
                     type="time"
                     value={rideTime}
                     onChange={(e) => setRideTime(e.target.value)}
-                    className="w-full rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    style={{
+                      border: '1px solid #e0dbd5',
+                      background: '#f9f7f4',
+                      color: '#1a1a2e',
+                    }}
                   />
                 </div>
 
@@ -473,13 +548,14 @@ export default function Page() {
                   <div className="flex justify-between items-baseline mb-1.5">
                     <label
                       htmlFor="avg-speed"
-                      className="text-xs font-medium uppercase tracking-widest text-stone-400"
+                      className="text-xs font-medium uppercase"
+                      style={{ letterSpacing: '0.05em', color: '#7c7872' }}
                     >
                       Gem. snelheid
                     </label>
                     <span
                       className="text-base font-bold"
-                      style={{ fontFamily: 'Sora, sans-serif', color: '#f97316' }}
+                      style={{ fontFamily: 'Sora, sans-serif', color: '#4a6fa5' }}
                     >
                       {avgSpeedKmh} km/u
                     </span>
@@ -492,99 +568,181 @@ export default function Page() {
                     step={1}
                     value={avgSpeedKmh}
                     onChange={(e) => setAvgSpeedKmh(Number(e.target.value))}
-                    className="w-full accent-orange-500"
+                    className="w-full"
+                    style={{ accentColor: '#4a6fa5' }}
                   />
-                  <div className="flex justify-between text-xs text-stone-300 mt-0.5">
+                  <div className="flex justify-between text-xs mt-0.5" style={{ color: '#c9c3bb' }}>
                     <span>20</span>
                     <span>38</span>
                   </div>
                 </div>
               </div>
 
-              {/* Estimated duration hint */}
-              <p className="mt-4 text-xs text-stone-400">
+              <p className="mt-4 text-xs" style={{ color: '#7c7872' }}>
                 Geschatte rijtijd:{' '}
-                <span className="font-semibold text-stone-600">
+                <span className="font-semibold" style={{ color: '#3d3a36' }}>
                   {Math.floor(durationHours)}u{' '}
                   {Math.round((durationHours % 1) * 60).toString().padStart(2, '0')}
                 </span>
               </p>
             </div>
 
-            {/* ── Map ───────────────────────────────────────────────────── */}
-            <div className="rounded-2xl overflow-hidden shadow-sm border border-stone-200">
-              <RouteMap points={mapPoints} />
+            {/* ── Route stats + map ──────────────────────────────────────── */}
+            <div
+              className="fade-up"
+              style={{ animationDelay: '0.1s' }}
+            >
+              {/* Stats */}
+              <div
+                className="rounded-t-xl px-5 py-5"
+                style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+              >
+                <p
+                  className="text-xs font-medium uppercase mb-4"
+                  style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+                >
+                  Route
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                  <div>
+                    <p
+                      className="text-xs font-medium uppercase mb-1"
+                      style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+                    >
+                      Afstand
+                    </p>
+                    <p
+                      className="text-2xl font-bold"
+                      style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
+                    >
+                      {route.distanceKm.toFixed(1)}{' '}
+                      <span className="text-base font-normal" style={{ color: '#7c7872' }}>km</span>
+                    </p>
+                  </div>
+                  <div>
+                    <p
+                      className="text-xs font-medium uppercase mb-1"
+                      style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+                    >
+                      Hoogtemeters
+                    </p>
+                    <p
+                      className="text-2xl font-bold"
+                      style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
+                    >
+                      {route.elevationGain.toLocaleString('nl-NL')}{' '}
+                      <span className="text-base font-normal" style={{ color: '#7c7872' }}>m</span>
+                    </p>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <p
+                      className="text-xs font-medium uppercase mb-1"
+                      style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+                    >
+                      Startlocatie
+                    </p>
+                    <p className="text-sm font-medium leading-snug" style={{ color: '#3d3a36' }}>
+                      {route.startLat.toFixed(4)}°N{' '}
+                      {route.startLon.toFixed(4)}°E
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Map — flush below stats */}
+              <div className="rounded-b-xl overflow-hidden" style={{ border: '1px solid #e0dbd5', borderTop: 'none' }}>
+                <RouteMap points={mapPoints} />
+              </div>
             </div>
 
-            {/* ── Elevation profile ─────────────────────────────────────── */}
-            <ElevationProfile
-              profile={route.elevationProfile}
-              hardestClimb={route.hardestClimb}
-            />
+            {/* ── Elevation profile ──────────────────────────────────────── */}
+            <div className="fade-up" style={{ animationDelay: '0.15s' }}>
+              <ElevationProfile
+                profile={route.elevationProfile}
+                hardestClimb={route.hardestClimb}
+              />
+            </div>
 
-            {/* ── Weather ───────────────────────────────────────────────── */}
+            {/* ── Weather ────────────────────────────────────────────────── */}
             {weatherLoading && (
-              <div className="rounded-2xl bg-white border border-stone-200 px-5 py-8 text-center text-sm text-stone-400">
+              <div
+                className="rounded-xl px-5 py-8 text-center text-sm fade-up"
+                style={{
+                  background: '#fff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                  color: '#7c7872',
+                  animationDelay: '0.2s',
+                }}
+              >
                 Weersdata ophalen…
               </div>
             )}
             {weatherError && (
-              <div className="rounded-xl bg-red-50 border border-red-200 px-5 py-4 text-sm text-red-700">
+              <div
+                className="rounded-xl px-5 py-4 text-sm"
+                style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}
+              >
                 {weatherError}
               </div>
             )}
             {rideHours.length > 0 && (
-              <WeatherPanel hours={rideHours} durationHours={durationHours} />
+              <div className="fade-up" style={{ animationDelay: '0.2s' }}>
+                <WeatherPanel hours={rideHours} durationHours={durationHours} />
+              </div>
             )}
+
+            {/* ── Clothing ───────────────────────────────────────────────── */}
             {rideHours.length > 0 && (
-              <ClothingAdvice hours={rideHours} />
+              <div className="fade-up" style={{ animationDelay: '0.25s' }}>
+                <ClothingAdvice hours={rideHours} />
+              </div>
             )}
-            {rideHours.length > 0 && route && (
-              <NutritionAdvice
-                hours={rideHours}
-                distanceKm={route.distanceKm}
-                durationHours={durationHours}
-              />
+
+            {/* ── Nutrition ──────────────────────────────────────────────── */}
+            {rideHours.length > 0 && (
+              <div className="fade-up" style={{ animationDelay: '0.3s' }}>
+                <NutritionAdvice
+                  hours={rideHours}
+                  distanceKm={route.distanceKm}
+                  durationHours={durationHours}
+                />
+              </div>
             )}
+
+            {/* ── Packing checklist ──────────────────────────────────────── */}
+            {rideHours.length > 0 && (
+              <div className="fade-up" style={{ animationDelay: '0.35s' }}>
+                <PackingChecklist
+                  hours={rideHours}
+                  distanceKm={route.distanceKm}
+                  elevationGain={route.elevationGain}
+                />
+              </div>
+            )}
+
             {!weatherLoading && !weatherError && allWeather && rideHours.length === 0 && (
-              <div className="rounded-2xl bg-white border border-stone-200 px-5 py-6 text-sm text-stone-400 text-center">
+              <div
+                className="rounded-xl px-5 py-6 text-sm text-center fade-up"
+                style={{
+                  background: '#fff',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                  color: '#7c7872',
+                  animationDelay: '0.2s',
+                }}
+              >
                 Geen weersdata beschikbaar voor de gekozen datum en tijd. Kies een datum
                 binnen de komende 3 dagen.
               </div>
             )}
-
-            {/* ── Packing checklist ─────────────────────────────────── */}
-            {rideHours.length > 0 && route && (
-              <PackingChecklist
-                hours={rideHours}
-                distanceKm={route.distanceKm}
-                elevationGain={route.elevationGain}
-              />
-            )}
-
-            {/* Reset */}
-            <div className="flex justify-end">
-              <button
-                onClick={() => {
-                  setRoute(null)
-                  setError(null)
-                  setAllWeather(null)
-                  if (inputRef.current) inputRef.current.value = ''
-                }}
-                className="text-sm text-stone-400 hover:text-stone-700 transition-colors underline underline-offset-2"
-              >
-                Andere route laden
-              </button>
-            </div>
           </>
         )}
       </main>
 
       <footer
-        className="text-center py-5 text-xs text-stone-400 border-t border-stone-200"
-        style={{ background: '#fafaf9' }}
+        className="text-center py-6 text-xs"
+        style={{ color: '#7c7872', borderTop: '1px solid #e0dbd5' }}
       >
-        Knecht — Jouw digitale wielrenknecht
+        Knecht. Jouw digitale meesterknecht.
       </footer>
     </div>
   )

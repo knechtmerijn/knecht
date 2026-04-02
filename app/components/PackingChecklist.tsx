@@ -43,21 +43,21 @@ function buildItems(hours: HourlyWeather[], distanceKm: number, elevationGain: n
     conditional.push({
       id: 'extra-binnenband',
       label: 'Extra binnenband',
-      reason: `lange rit van ${Math.round(distanceKm)} km`,
+      reason: `${Math.round(distanceKm)} km`,
     })
   }
   if (maxTemp > 25) {
     conditional.push({
       id: 'zonnebrand',
       label: 'Zonnebrand',
-      reason: `het wordt ${Math.round(maxTemp)}°`,
+      reason: `${Math.round(maxTemp)}° verwacht`,
     })
   }
   if (minTemp < 5) {
     conditional.push({
       id: 'extra-handschoenen',
       label: 'Extra handschoenen in achterzak',
-      reason: `het is ${Math.round(minTemp)}° aan de start`,
+      reason: `${Math.round(minTemp)}° aan de start`,
     })
   }
   if (elevationGain > 1000) {
@@ -88,49 +88,63 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
   const progressPct = Math.round((doneCount / totalCount) * 100)
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-stone-200 shadow-sm">
+    <div
+      className="rounded-xl overflow-hidden"
+      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+    >
       {/* Header */}
-      <div className="px-5 py-4" style={{ background: '#1a1a2e' }}>
-        <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">
+      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+        <p
+          className="text-xs font-medium uppercase mb-1"
+          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+        >
           Check voor vertrek
         </p>
         <div className="flex items-center justify-between">
-          <p className="text-sm text-white">
+          <p className="text-sm" style={{ color: '#1a1a2e' }}>
             {allDone ? (
-              <span style={{ color: '#22c55e' }} className="font-semibold">
+              <span style={{ color: '#16a34a' }} className="font-semibold">
                 Alles ingepakt — veel plezier!
               </span>
             ) : (
               <>
-                <span className="font-semibold" style={{ color: '#f97316' }}>
+                <span className="font-semibold" style={{ color: '#4a6fa5' }}>
                   {doneCount}/{totalCount}
                 </span>{' '}
-                items afgevinkt
+                afgevinkt
               </>
             )}
           </p>
-          <span className="text-xs text-stone-400">{progressPct}%</span>
+          <span className="text-xs" style={{ color: '#7c7872' }}>{progressPct}%</span>
         </div>
         {/* Progress bar */}
-        <div className="mt-2 h-1 rounded-full bg-stone-700">
+        <div className="mt-2 h-1 rounded-full" style={{ background: '#e0dbd5' }}>
           <div
             className="h-1 rounded-full transition-all duration-300"
             style={{
               width: `${progressPct}%`,
-              background: allDone ? '#22c55e' : '#f97316',
+              background: allDone ? '#16a34a' : '#4a6fa5',
             }}
           />
         </div>
       </div>
 
       {/* List */}
-      <div className="bg-white divide-y divide-stone-100">
+      <div className="divide-y" style={{ borderColor: '#f0ebe4' }}>
         {items.map((item) => {
           const isChecked = checked.has(item.id)
+          const isConditional = !!item.reason
           return (
             <label
               key={item.id}
-              className="flex items-center gap-4 px-5 py-3.5 cursor-pointer select-none transition-colors hover:bg-stone-50"
+              className="flex items-center gap-4 px-5 py-3.5 cursor-pointer select-none transition-colors"
+              style={
+                isConditional && !isChecked
+                  ? { background: '#fdf6ee' }
+                  : isChecked
+                  ? { background: '#f9f7f4' }
+                  : undefined
+              }
             >
               {/* Custom checkbox */}
               <span className="relative shrink-0 flex items-center justify-center">
@@ -141,11 +155,11 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
                   className="sr-only"
                 />
                 <span
-                  className="w-5 h-5 rounded flex items-center justify-center border-2 transition-all duration-150"
+                  className="w-5 h-5 rounded flex items-center justify-center transition-all duration-150"
                   style={
                     isChecked
-                      ? { background: '#22c55e', borderColor: '#22c55e' }
-                      : { background: 'white', borderColor: '#d6d3d1' }
+                      ? { background: '#16a34a', border: '2px solid #16a34a' }
+                      : { background: 'white', border: '2px solid #c9c3bb' }
                   }
                   aria-hidden="true"
                 >
@@ -169,22 +183,24 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
               </span>
 
               {/* Label */}
-              <span className="flex-1 min-w-0">
+              <span className="flex-1 min-w-0 flex items-center flex-wrap gap-x-2 gap-y-0.5">
                 <span
-                  className="text-sm font-medium transition-colors"
-                  style={{ color: isChecked ? '#a8a29e' : '#1c1917' }}
+                  className="text-sm font-medium"
+                  style={{
+                    color: isChecked ? '#7c7872' : '#1a1a2e',
+                    textDecoration: isChecked ? 'line-through' : 'none',
+                  }}
                 >
-                  <span style={isChecked ? { textDecoration: 'line-through' } : undefined}>
-                    {item.label}
-                  </span>
+                  {item.label}
                 </span>
                 {item.reason && (
                   <span
-                    className="ml-2 text-xs px-2 py-0.5 rounded-full"
-                    style={{
-                      background: isChecked ? '#f5f5f4' : '#fff7ed',
-                      color: isChecked ? '#a8a29e' : '#c2410c',
-                    }}
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={
+                      isChecked
+                        ? { background: '#f0ebe4', color: '#7c7872' }
+                        : { background: '#fde8c8', color: '#92400e' }
+                    }
                   >
                     {item.reason}
                   </span>
