@@ -32,7 +32,7 @@ function ElevTooltip({
   return (
     <div
       className="text-xs px-3 py-2 rounded-lg shadow"
-      style={{ background: '#1a1a2e', color: '#fff' }}
+      style={{ background: '#0f1a3e', color: '#fff', fontFamily: 'Satoshi, sans-serif' }}
     >
       <span style={{ color: '#94a3b8' }}>{d.distanceKm.toFixed(1)} km</span>
       <span className="ml-2 font-semibold">{d.elevation} m</span>
@@ -57,26 +57,26 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
   return (
     <div
       className="rounded-xl overflow-hidden"
-      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
     >
       {/* Header */}
-      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
         <p
           className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+          style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
         >
           Profiel
         </p>
         {hardestClimb ? (
-          <p className="text-sm" style={{ color: '#1a1a2e' }}>
+          <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
             Pittigste klim: km {hardestClimb.startKm.toFixed(0)}–{hardestClimb.endKm.toFixed(0)},{' '}
-            <span className="font-semibold" style={{ color: '#4a6fa5' }}>
+            <span className="font-semibold" style={{ color: '#3366cc' }}>
               {hardestClimb.avgGradient.toFixed(1)}% gem
             </span>
             , {hardestClimb.maxGradient.toFixed(0)}% max
           </p>
         ) : (
-          <p className="text-sm" style={{ color: '#3d3a36' }}>
+          <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
             Pannenkoek-vlak. Lekker in het wiel kruipen en doordraaien.
           </p>
         )}
@@ -88,12 +88,12 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
           <AreaChart data={profile} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="elevGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#4a6fa5" stopOpacity={0.5} />
-                <stop offset="100%" stopColor="#4a6fa5" stopOpacity={0} />
+                <stop offset="0%" stopColor="#3366cc" stopOpacity={0.5} />
+                <stop offset="100%" stopColor="#3366cc" stopOpacity={0} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#e0dbd5" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e2e6ed" vertical={false} />
 
             <XAxis
               dataKey="distanceKm"
@@ -101,7 +101,7 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
               domain={['dataMin', 'dataMax']}
               tickCount={6}
               tickFormatter={(v: number) => `${v.toFixed(0)} km`}
-              tick={{ fontSize: 11, fill: '#7c7872' }}
+              tick={{ fontSize: 11, fill: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
               axisLine={false}
               tickLine={false}
             />
@@ -110,7 +110,7 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
               domain={yDomain}
               tickCount={4}
               tickFormatter={(v: number) => `${v} m`}
-              tick={{ fontSize: 11, fill: '#7c7872' }}
+              tick={{ fontSize: 11, fill: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
               axisLine={false}
               tickLine={false}
               width={52}
@@ -122,11 +122,11 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
             <Area
               type="monotone"
               dataKey="elevation"
-              stroke="#4a6fa5"
+              stroke="#3366cc"
               strokeWidth={2}
               fill="url(#elevGradient)"
               dot={false}
-              activeDot={{ r: 4, fill: '#4a6fa5', stroke: '#fff', strokeWidth: 2 }}
+              activeDot={{ r: 4, fill: '#3366cc', stroke: '#fff', strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>

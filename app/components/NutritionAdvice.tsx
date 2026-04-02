@@ -24,10 +24,8 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
   const durationMin = durationHours * 60
   const maxTemp = Math.max(...hours.map((h) => h.temp))
 
-  // ── Calorieën ───────────────────────────────────────────────────────────────
   const kcal = Math.round(distanceKm * 25)
 
-  // ── Koolhydraten ────────────────────────────────────────────────────────────
   let carbsBlock: Block
   if (durationMin < 60) {
     carbsBlock = {
@@ -44,21 +42,18 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
     const nGels = Math.ceil(nItems / 2)
     const nRepen = Math.floor(nItems / 2)
     const totalCarbs = nGels * 25 + nRepen * 30
-
     const itemStr = [
       nGels > 0 ? `${nGels} gel${nGels > 1 ? 's' : ''}` : '',
       nRepen > 0 ? `${nRepen} rijstwafel${nRepen > 1 ? 's' : ''}` : '',
     ]
       .filter(Boolean)
       .join(' + ')
-
     carbsBlock = {
       label: 'Koolhydraten',
       detail: `${totalCarbs}g onderweg: ${itemStr}. Eerste gel na 45 min, daarna elke 30 min.`,
     }
   }
 
-  // ── Drinken ─────────────────────────────────────────────────────────────────
   let drinkBlock: Block
   if (maxTemp > 30) {
     drinkBlock = {
@@ -76,16 +71,11 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
     }
   }
 
-  // ── Elektrolyten ────────────────────────────────────────────────────────────
   const needsElectrolytes = durationHours > 2 || maxTemp > 25
   const electrolytesBlock: Block | null = needsElectrolytes
-    ? {
-        label: 'Elektrolyten',
-        detail: 'Elektrolytentablet in minstens 1 bidon.',
-      }
+    ? { label: 'Elektrolyten', detail: 'Elektrolytentablet in minstens 1 bidon.' }
     : null
 
-  // ── Stats ───────────────────────────────────────────────────────────────────
   const stats: Stat[] = [{ value: kcal.toLocaleString('nl-NL'), unit: 'kcal', label: 'Verbruik' }]
 
   if (durationMin >= 90) {
@@ -116,28 +106,28 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
   return (
     <div
       className="rounded-xl overflow-hidden"
-      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
     >
       {/* Header */}
-      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
         <p
           className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+          style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
         >
           Achterzakken
         </p>
-        <p className="text-sm" style={{ color: '#1a1a2e' }}>
+        <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
           Voor{' '}
-          <span className="font-semibold" style={{ color: '#4a6fa5' }}>
+          <span className="font-semibold" style={{ color: '#3366cc' }}>
             {distanceKm.toFixed(0)} km
           </span>{' '}
           en{' '}
-          <span className="font-semibold" style={{ color: '#4a6fa5' }}>
+          <span className="font-semibold" style={{ color: '#3366cc' }}>
             {Math.floor(durationHours)}u
             {Math.round((durationHours % 1) * 60)
               .toString()
-              .padStart(2, '0')}{' '}
-          </span>
+              .padStart(2, '0')}
+          </span>{' '}
           rijden
         </p>
       </div>
@@ -147,28 +137,28 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
         className="grid border-b"
         style={{
           gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
-          background: '#f9f7f4',
-          borderColor: '#e0dbd5',
+          background: '#eef1f8',
+          borderColor: '#e2e6ed',
         }}
       >
         {stats.map((s) => (
           <div
             key={s.label}
             className="px-5 py-4 border-r last:border-r-0"
-            style={{ borderColor: '#e0dbd5' }}
+            style={{ borderColor: '#e2e6ed' }}
           >
             <p
               className="text-xs font-medium uppercase mb-0.5"
-              style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+              style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
             >
               {s.label}
             </p>
             <p
               className="text-2xl font-bold leading-none"
-              style={{ fontFamily: 'Sora, sans-serif', color: '#1a1a2e' }}
+              style={{ fontFamily: 'Satoshi, sans-serif', color: '#0f1a3e' }}
             >
               {s.value}{' '}
-              <span className="text-sm font-normal" style={{ color: '#7c7872' }}>
+              <span className="text-sm font-normal" style={{ color: '#6b7280' }}>
                 {s.unit}
               </span>
             </p>
@@ -177,25 +167,29 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
       </div>
 
       {/* Detail blocks */}
-      <div className="divide-y" style={{ borderColor: '#f0ebe4' }}>
+      <div className="divide-y" style={{ borderColor: '#e2e6ed' }}>
         {blocks.map((b) => (
           <div
             key={b.label}
             className="px-5 py-4"
-            style={b.warning ? { background: '#fdf6ee' } : undefined}
+            style={b.warning ? { background: '#fffbeb' } : undefined}
           >
             <p
               className="text-xs font-medium uppercase mb-1"
               style={{
                 letterSpacing: '0.05em',
-                color: b.warning ? '#b45309' : '#7c7872',
+                color: b.warning ? '#b45309' : '#6b7280',
+                fontFamily: 'Satoshi, sans-serif',
               }}
             >
               {b.label}
             </p>
             <p
               className="text-sm leading-relaxed"
-              style={{ color: b.warning ? '#92400e' : '#3d3a36' }}
+              style={{
+                color: b.warning ? '#92400e' : '#374151',
+                fontFamily: 'Satoshi, sans-serif',
+              }}
             >
               {b.detail}
             </p>

@@ -90,47 +90,52 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
   return (
     <div
       className="rounded-xl overflow-hidden"
-      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
     >
       {/* Header */}
-      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
         <p
           className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+          style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
         >
           Check voor vertrek
         </p>
         <div className="flex items-center justify-between">
-          <p className="text-sm" style={{ color: '#1a1a2e' }}>
+          <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
             {allDone ? (
               <span style={{ color: '#16a34a' }} className="font-semibold">
                 Alles ingepakt — veel plezier!
               </span>
             ) : (
               <>
-                <span className="font-semibold" style={{ color: '#4a6fa5' }}>
+                <span className="font-semibold" style={{ color: '#3366cc' }}>
                   {doneCount}/{totalCount}
                 </span>{' '}
                 afgevinkt
               </>
             )}
           </p>
-          <span className="text-xs" style={{ color: '#7c7872' }}>{progressPct}%</span>
+          <span
+            className="text-xs"
+            style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+          >
+            {progressPct}%
+          </span>
         </div>
         {/* Progress bar */}
-        <div className="mt-2 h-1 rounded-full" style={{ background: '#e0dbd5' }}>
+        <div className="mt-2 h-1 rounded-full" style={{ background: '#e2e6ed' }}>
           <div
             className="h-1 rounded-full transition-all duration-300"
             style={{
               width: `${progressPct}%`,
-              background: allDone ? '#16a34a' : '#4a6fa5',
+              background: allDone ? '#16a34a' : '#3366cc',
             }}
           />
         </div>
       </div>
 
       {/* List */}
-      <div className="divide-y" style={{ borderColor: '#f0ebe4' }}>
+      <div className="divide-y" style={{ borderColor: '#e2e6ed' }}>
         {items.map((item) => {
           const isChecked = checked.has(item.id)
           const isConditional = !!item.reason
@@ -140,13 +145,12 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
               className="flex items-center gap-4 px-5 py-3.5 cursor-pointer select-none transition-colors"
               style={
                 isConditional && !isChecked
-                  ? { background: '#fdf6ee' }
+                  ? { background: '#fffbeb' }
                   : isChecked
-                  ? { background: '#f9f7f4' }
+                  ? { background: '#f0f4ff' }
                   : undefined
               }
             >
-              {/* Custom checkbox */}
               <span className="relative shrink-0 flex items-center justify-center">
                 <input
                   type="checkbox"
@@ -158,8 +162,8 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
                   className="w-5 h-5 rounded flex items-center justify-center transition-all duration-150"
                   style={
                     isChecked
-                      ? { background: '#16a34a', border: '2px solid #16a34a' }
-                      : { background: 'white', border: '2px solid #c9c3bb' }
+                      ? { background: '#3366cc', border: '2px solid #3366cc' }
+                      : { background: 'white', border: '2px solid #c5ccd6' }
                   }
                   aria-hidden="true"
                 >
@@ -182,12 +186,12 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
                 </span>
               </span>
 
-              {/* Label */}
               <span className="flex-1 min-w-0 flex items-center flex-wrap gap-x-2 gap-y-0.5">
                 <span
                   className="text-sm font-medium"
                   style={{
-                    color: isChecked ? '#7c7872' : '#1a1a2e',
+                    fontFamily: 'Satoshi, sans-serif',
+                    color: isChecked ? '#6b7280' : '#0f1a3e',
                     textDecoration: isChecked ? 'line-through' : 'none',
                   }}
                 >
@@ -198,8 +202,16 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
                     className="text-xs px-2 py-0.5 rounded-full"
                     style={
                       isChecked
-                        ? { background: '#f0ebe4', color: '#7c7872' }
-                        : { background: '#fde8c8', color: '#92400e' }
+                        ? {
+                            background: '#e2e6ed',
+                            color: '#6b7280',
+                            fontFamily: 'Satoshi, sans-serif',
+                          }
+                        : {
+                            background: '#fef3c7',
+                            color: '#92400e',
+                            fontFamily: 'Satoshi, sans-serif',
+                          }
                     }
                   >
                     {item.reason}

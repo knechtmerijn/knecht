@@ -14,7 +14,6 @@ function getAdvice(hours: HourlyWeather[]): { categories: Category[]; avgTemp: n
   const maxPrecip = Math.max(...hours.map((h) => h.precipProb ?? 0))
   const tempDiff = Math.abs(hours[hours.length - 1].temp - hours[0].temp)
 
-  // Bovenlijf
   let bovenlijf: string[]
   if (avgTemp < 5) bovenlijf = ['Thermisch onderhemd', 'Winterjack']
   else if (avgTemp < 10) bovenlijf = ['Basislaag lange mouwen', 'Jersey', 'Gilet']
@@ -22,19 +21,16 @@ function getAdvice(hours: HourlyWeather[]): { categories: Category[]; avgTemp: n
   else if (avgTemp < 20) bovenlijf = ['Korte mouwen jersey', 'Gilet in achterzak']
   else bovenlijf = ['Korte mouwen jersey']
 
-  // Onderlijf
   let onderlijf: string[]
   if (avgTemp < 10) onderlijf = ['Lange thermobroek']
   else if (avgTemp < 16) onderlijf = ['Korte broek', 'Beenwarmers']
   else onderlijf = ['Korte broek']
 
-  // Handen & voeten
   let extremiteiten: string[]
   if (avgTemp < 5) extremiteiten = ['Winterhandschoenen', 'Overschoenen', 'Buff']
   else if (avgTemp < 12) extremiteiten = ['Lichte handschoenen', 'Toe covers']
   else extremiteiten = ['Geen handschoenen nodig']
 
-  // Extra's
   const extras: string[] = []
   if (maxWind > 30) extras.push('Windvest mee — het gaat flink waaien')
   if (maxPrecip >= 70)
@@ -65,19 +61,19 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
   return (
     <div
       className="rounded-xl overflow-hidden"
-      style={{ background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}
+      style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
     >
       {/* Header */}
-      <div className="px-5 py-4" style={{ background: '#f5f0eb' }}>
+      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
         <p
           className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#7c7872' }}
+          style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
         >
           Kit check
         </p>
-        <p className="text-sm" style={{ color: '#1a1a2e' }}>
+        <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
           Gem.{' '}
-          <span className="font-semibold" style={{ color: '#4a6fa5' }}>
+          <span className="font-semibold" style={{ color: '#3366cc' }}>
             {Math.round(avgTemp)}°
           </span>{' '}
           tijdens de rit
@@ -85,19 +81,20 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
       </div>
 
       {/* Category rows */}
-      <div className="divide-y" style={{ borderColor: '#f0ebe4' }}>
+      <div className="divide-y" style={{ borderColor: '#e2e6ed' }}>
         {categories.map((cat) => (
           <div
             key={cat.label}
             className="flex gap-4 px-5 py-4"
-            style={cat.accent ? { background: '#f0f4fa' } : undefined}
+            style={cat.accent ? { background: '#eff6ff' } : undefined}
           >
             <div className="flex-1 min-w-0">
               <p
                 className="text-xs font-medium uppercase mb-2"
                 style={{
                   letterSpacing: '0.05em',
-                  color: cat.accent ? '#4a6fa5' : '#7c7872',
+                  color: cat.accent ? '#3366cc' : '#6b7280',
+                  fontFamily: 'Satoshi, sans-serif',
                 }}
               >
                 {cat.label}
@@ -109,8 +106,17 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
                     className="text-sm px-3 py-1 rounded-full"
                     style={
                       cat.accent
-                        ? { background: '#dce9f5', color: '#2d5187', fontWeight: 500 }
-                        : { background: '#f5f0eb', color: '#3d3a36' }
+                        ? {
+                            background: '#dbeafe',
+                            color: '#1e40af',
+                            fontWeight: 500,
+                            fontFamily: 'Satoshi, sans-serif',
+                          }
+                        : {
+                            background: '#e8ecf3',
+                            color: '#374151',
+                            fontFamily: 'Satoshi, sans-serif',
+                          }
                     }
                   >
                     {item}
