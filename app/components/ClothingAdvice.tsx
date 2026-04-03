@@ -61,13 +61,13 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
   return (
     <div
       className="rounded-xl overflow-hidden"
-      style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
+      style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
     >
       {/* Header */}
       <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
         <p
           className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+          style={{ letterSpacing: '0.05em', color: '#3366cc', fontFamily: 'Satoshi, sans-serif' }}
         >
           Kit check
         </p>
@@ -93,7 +93,7 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
                 className="text-xs font-medium uppercase mb-2"
                 style={{
                   letterSpacing: '0.05em',
-                  color: cat.accent ? '#3366cc' : '#6b7280',
+                  color: '#3366cc',
                   fontFamily: 'Satoshi, sans-serif',
                 }}
               >
@@ -113,8 +113,8 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
                             fontFamily: 'Satoshi, sans-serif',
                           }
                         : {
-                            background: '#e8ecf3',
-                            color: '#374151',
+                            background: '#e8f0fd',
+                            color: '#3366cc',
                             fontFamily: 'Satoshi, sans-serif',
                           }
                     }

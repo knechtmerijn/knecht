@@ -172,33 +172,6 @@ function parseGpx(text: string): RouteData {
   }
 }
 
-// ─── Logo icon (bidon + gel, oranje) ─────────────────────────────────────────
-
-function LogoIcon() {
-  return (
-    <svg
-      viewBox="0 0 32 26"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-6 h-6 shrink-0"
-      aria-hidden="true"
-      stroke="#f59e0b"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {/* Bidon */}
-      <rect x="2" y="9" width="11" height="15" rx="2.5" />
-      <rect x="4" y="5" width="7" height="5" rx="1" />
-      <rect x="5.5" y="2.5" width="4" height="3" rx="0.75" />
-      <line x1="2" y1="15" x2="13" y2="15" />
-      {/* Gel packet */}
-      <rect x="18" y="8" width="12" height="12" rx="2" />
-      <line x1="24" y1="8" x2="24" y2="20" />
-    </svg>
-  )
-}
-
 // ─── Upload zone bike icon ────────────────────────────────────────────────────
 
 function BikeIcon() {
@@ -348,23 +321,55 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#ffffff' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#f4f6fb', position: 'relative' }}>
+      {/* Decorative background route line */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          pointerEvents: 'none',
+          zIndex: 0,
+          overflow: 'hidden',
+        }}
+      >
+        <svg
+          width="100%"
+          height="100%"
+          viewBox="0 0 720 2000"
+          preserveAspectRatio="none"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M 260 0 C 200 140 370 310 245 500 C 120 690 360 870 215 1080 C 70 1290 340 1450 195 1660 C 110 1800 255 1910 240 2000"
+            stroke="#f59e0b"
+            strokeWidth="3"
+            strokeOpacity="0.12"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
       {/* Header */}
-      <header className="px-6 pt-8 pb-6" style={{ background: '#ffffff' }}>
+      <header className="px-6 pt-10 pb-6" style={{ background: 'transparent', position: 'relative', zIndex: 1 }}>
         <div className="max-w-[720px] mx-auto">
-          <div className="flex items-center gap-2.5 mb-1">
-            <LogoIcon />
-            <h1
-              className="text-3xl tracking-tight"
-              style={{
-                fontFamily: 'Satoshi, sans-serif',
-                fontWeight: 900,
-                color: '#0f1a3e',
-              }}
-            >
-              Knecht<span style={{ color: '#f59e0b' }}>.</span>
-            </h1>
-          </div>
+          <h1
+            className="tracking-tight mb-1"
+            style={{
+              fontFamily: 'Satoshi, sans-serif',
+              fontWeight: 900,
+              color: '#0f1a3e',
+              fontSize: 'clamp(36px, 5vw, 52px)',
+              lineHeight: 1.05,
+            }}
+          >
+            Knecht<span style={{ color: '#f59e0b' }}>.</span>
+          </h1>
           <p
             className="text-sm"
             style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
@@ -373,10 +378,8 @@ export default function Page() {
           </p>
         </div>
       </header>
-      {/* Accent line */}
-      <div style={{ height: '2px', background: '#f59e0b' }} />
 
-      <main className="flex-1 max-w-[720px] w-full mx-auto px-4 py-10 space-y-6">
+      <main className="flex-1 max-w-[720px] w-full mx-auto px-4 py-10 space-y-6" style={{ position: 'relative', zIndex: 1 }}>
 
         {/* ── Upload zone ─────────────────────────────────────────────────── */}
         {!route && (
@@ -439,7 +442,7 @@ export default function Page() {
         {route && (
           <div
             className="rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 fade-up"
-            style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
+            style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
           >
             <div className="flex items-center gap-2.5 min-w-0">
               <svg
@@ -506,8 +509,9 @@ export default function Page() {
             <div
               className="rounded-xl px-5 py-5 fade-up"
               style={{
-                background: '#f5f7fa',
+                background: '#ffffff',
                 border: '1px solid #e2e6ed',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
                 animationDelay: '0.05s',
               }}
             >
@@ -515,7 +519,7 @@ export default function Page() {
                 className="text-xs font-medium uppercase mb-4"
                 style={{
                   letterSpacing: '0.05em',
-                  color: '#6b7280',
+                  color: '#3366cc',
                   fontFamily: 'Satoshi, sans-serif',
                 }}
               >
@@ -634,13 +638,13 @@ export default function Page() {
             <div className="fade-up" style={{ animationDelay: '0.1s' }}>
               <div
                 className="rounded-t-xl px-5 py-5"
-                style={{ background: '#f5f7fa', border: '1px solid #e2e6ed', borderBottom: 'none' }}
+                style={{ background: '#ffffff', border: '1px solid #e2e6ed', borderBottom: 'none', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
               >
                 <p
                   className="text-xs font-medium uppercase mb-4"
                   style={{
                     letterSpacing: '0.05em',
-                    color: '#6b7280',
+                    color: '#3366cc',
                     fontFamily: 'Satoshi, sans-serif',
                   }}
                 >
@@ -817,6 +821,8 @@ export default function Page() {
           color: '#6b7280',
           borderTop: '1px solid #e2e6ed',
           fontFamily: 'Satoshi, sans-serif',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         Knecht. Jouw digitale meesterknecht.

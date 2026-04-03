@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node -e \"const r = require\\(''''./node_modules/recharts''''\\); const keys = Object.keys\\(r\\); console.log\\(keys.length, ''''exports''''\\)\")",
+      "Bash(grep -l TooltipProps C:/Users/merij/knecht/node_modules/recharts/types/*.d.ts)",
+      "Bash(npm run:*)",
+      "Bash(taskkill:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}

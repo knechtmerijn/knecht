@@ -1,7 +1,7 @@
 'use client'
 
 export type HourlyWeather = {
-  time: string // "YYYY-MM-DDTHH:00"
+  time: string
   temp: number
   windspeed: number
   winddir: number
@@ -59,10 +59,7 @@ function PrecipBar({ prob }: { prob: number }) {
       </div>
       <span
         className="text-xs"
-        style={{
-          color: prob >= 30 ? '#3366cc' : '#6b7280',
-          fontFamily: 'Satoshi, sans-serif',
-        }}
+        style={{ color: prob >= 30 ? '#3366cc' : '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
       >
         {prob}%
       </span>
@@ -97,13 +94,13 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
   return (
     <div
       className="rounded-xl overflow-hidden"
-      style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
+      style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
     >
       {/* Header */}
       <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
         <p
           className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+          style={{ letterSpacing: '0.05em', color: '#3366cc', fontFamily: 'Satoshi, sans-serif' }}
         >
           Weer · {formatDuration(durationHours)} rijden
         </p>
@@ -143,11 +140,7 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
                 key={h.time}
                 title={label}
                 className="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl"
-                style={{
-                  minWidth: '72px',
-                  background: '#ffffff',
-                  border: '1px solid #e2e6ed',
-                }}
+                style={{ minWidth: '72px', background: '#f5f7fa', border: '1px solid #e2e6ed' }}
               >
                 <span
                   className="text-xs font-medium"
