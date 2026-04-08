@@ -1,5 +1,8 @@
 'use client'
 
+import { useMemo } from 'react'
+import { getWeerQuote } from '../data/quotes'
+
 export type HourlyWeather = {
   time: string
   temp: number
@@ -91,6 +94,16 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
   const mid = hours[Math.floor((hours.length - 1) / 2)]
   const midCompass = windDegToCompass(mid.winddir)
 
+  const avgTemp   = hours.reduce((s, h) => s + h.temp, 0) / hours.length
+  const maxWind   = Math.max(...hours.map((h) => h.windspeed))
+  const maxPrecip = Math.max(...hours.map((h) => h.precipProb ?? 0))
+
+  const weerQuote = useMemo(
+    () => getWeerQuote(avgTemp, maxWind, maxPrecip),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [Math.round(avgTemp), Math.round(maxWind / 5) * 5, Math.round(maxPrecip / 10) * 10],
+  )
+
   return (
     <div
       className="rounded-2xl overflow-hidden"
@@ -103,25 +116,28 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
         >
           Weer · {formatDuration(durationHours)} rijden
         </p>
-        <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
+        <p className="text-sm mb-2" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif', fontStyle: 'italic' }}>
+          {weerQuote}
+        </p>
+        <p className="text-xs" style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}>
           Vertrek{' '}
-          <span className="font-semibold" style={{ color: '#0B1220' }}>
+          <span className="font-medium" style={{ color: '#374151' }}>
             {Math.round(first.temp)}°
           </span>
           {hours.length > 2 && (
             <>
               {', halverwege '}
-              <span className="font-semibold" style={{ color: '#0B1220' }}>
+              <span className="font-medium" style={{ color: '#374151' }}>
                 {Math.round(mid.temp)}°
               </span>
             </>
           )}
           {' · wind '}
-          <span className="font-semibold" style={{ color: '#0B1220' }}>
+          <span className="font-medium" style={{ color: '#374151' }}>
             {midCompass} {Math.round(mid.windspeed)} km/u
           </span>
           {mid.precipProb >= 30 && (
-            <span style={{ color: '#F59E0B' }}>
+            <span style={{ color: '#D97706' }}>
               {' '}· {mid.precipProb}% neerslag
             </span>
           )}

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import type { HourlyWeather } from './WeatherPanel'
+import { getChecklistQuote } from '../data/quotes'
 
 type Props = {
   hours: HourlyWeather[]
@@ -74,6 +75,8 @@ function buildItems(hours: HourlyWeather[], distanceKm: number, elevationGain: n
 export default function PackingChecklist({ hours, distanceKm, elevationGain }: Props) {
   const items = buildItems(hours, distanceKm, elevationGain)
   const [checked, setChecked] = useState<Set<string>>(new Set())
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const checklistQuote = useMemo(() => getChecklistQuote(), [])
 
   const toggle = (id: string) =>
     setChecked((prev) => {
@@ -99,6 +102,9 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
           style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
         >
           Check voor vertrek
+        </p>
+        <p className="text-sm italic mb-3" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
+          {checklistQuote}
         </p>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>

@@ -1,6 +1,8 @@
 'use client'
 
+import { useMemo } from 'react'
 import type { HourlyWeather } from './WeatherPanel'
+import { getKitQuote } from '../data/quotes'
 
 type Category = {
   label: string
@@ -57,6 +59,13 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
   if (hours.length === 0) return null
 
   const { categories, avgTemp } = getAdvice(hours)
+  const maxPrecip = Math.max(...hours.map((h) => h.precipProb ?? 0))
+
+  const kitQuote = useMemo(
+    () => getKitQuote(avgTemp, maxPrecip),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [Math.round(avgTemp), Math.round(maxPrecip / 10) * 10],
+  )
 
   return (
     <div
@@ -70,12 +79,11 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
         >
           Kit check
         </p>
-        <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
-          Gem.{' '}
-          <span className="font-semibold" style={{ color: '#0B1220' }}>
-            {Math.round(avgTemp)}°
-          </span>{' '}
-          tijdens de rit
+        <p className="text-sm italic mb-1" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
+          {kitQuote}
+        </p>
+        <p className="text-xs" style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}>
+          Gem. {Math.round(avgTemp)}° tijdens de rit
         </p>
       </div>
 

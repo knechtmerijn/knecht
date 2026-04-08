@@ -1,6 +1,8 @@
 'use client'
 
+import { useMemo } from 'react'
 import type { HourlyWeather } from './WeatherPanel'
+import { getVoedingQuote } from '../data/quotes'
 
 type Props = {
   hours: HourlyWeather[]
@@ -78,6 +80,13 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
   if (hours.length === 0) return null
   const { stats, blocks } = calcNutrition(hours, distanceKm, durationHours)
 
+  const maxTemp = Math.max(...hours.map((h) => h.temp))
+  const voedingQuote = useMemo(
+    () => getVoedingQuote(durationHours, maxTemp),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [Math.round(durationHours * 2), Math.round(maxTemp)],
+  )
+
   return (
     <div
       className="rounded-2xl overflow-hidden"
@@ -90,17 +99,12 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
         >
           Achterzakken
         </p>
-        <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
-          Voor{' '}
-          <span className="font-semibold" style={{ color: '#0B1220' }}>
-            {distanceKm.toFixed(0)} km
-          </span>{' '}
-          en{' '}
-          <span className="font-semibold" style={{ color: '#0B1220' }}>
-            {Math.floor(durationHours)}u
-            {Math.round((durationHours % 1) * 60).toString().padStart(2, '0')}
-          </span>{' '}
-          rijden
+        <p className="text-sm italic mb-1" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
+          {voedingQuote}
+        </p>
+        <p className="text-xs" style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}>
+          {distanceKm.toFixed(0)} km ·{' '}
+          {Math.floor(durationHours)}u{Math.round((durationHours % 1) * 60).toString().padStart(2, '0')} rijden
         </p>
       </div>
 

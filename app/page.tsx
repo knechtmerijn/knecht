@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import ElevationProfile from './components/ElevationProfile'
 import type { ElevPoint, HardestClimb } from './components/ElevationProfile'
@@ -9,6 +9,7 @@ import type { HourlyWeather } from './components/WeatherPanel'
 import ClothingAdvice from './components/ClothingAdvice'
 import NutritionAdvice from './components/NutritionAdvice'
 import PackingChecklist from './components/PackingChecklist'
+import { getOpenerQuote, getPacingQuote, getFooterQuote } from './data/quotes'
 
 const RouteMap = dynamic(() => import('./components/RouteMap'), {
   ssr: false,
@@ -320,6 +321,26 @@ export default function Page() {
     })
   }
 
+  // ── Quotes (willekeurig per sessie, stabiel per conditie-bucket) ─────────────
+  const hasWeather = rideHours.length > 0
+  const _avgTemp   = hasWeather ? rideHours.reduce((s, h) => s + h.temp, 0) / rideHours.length : 15
+  const _maxPrecip = hasWeather ? Math.max(...rideHours.map((h) => h.precipProb)) : 0
+  const _maxWind   = hasWeather ? Math.max(...rideHours.map((h) => h.windspeed)) : 0
+
+  const openerQuote = useMemo(() => {
+    if (!route) return ''
+    return getOpenerQuote(route.distanceKm, route.elevationGain, _avgTemp, _maxPrecip, _maxWind)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route?.distanceKm, route?.elevationGain, hasWeather])
+
+  const pacingQuote = useMemo(() => {
+    if (!route) return null
+    return getPacingQuote(durationHours, route.elevationGain)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Math.round(durationHours * 2), route?.elevationGain])
+
+  const footerQuote = useMemo(() => getFooterQuote(), [])
+
   const handleFile = useCallback((file: File) => {
     if (!file.name.endsWith('.gpx')) {
       setError('Alleen .gpx bestanden worden ondersteund.')
@@ -379,7 +400,37 @@ export default function Page() {
               lineHeight: 1,
             }}
           >
-            Knecht<span style={{ color: '#F59E0B' }}>.</span>
+            Knecht
+            <svg
+              viewBox="0 0 24 40"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              style={{
+                display: 'inline-block',
+                verticalAlign: 'middle',
+                height: '0.85em',
+                width: 'auto',
+                marginLeft: '0.06em',
+                marginBottom: '0.05em',
+              }}
+              stroke="#F59E0B"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              {/* body */}
+              <rect x="6" y="10" width="12" height="22" rx="4" />
+              {/* shoulder taper */}
+              <line x1="6" y1="14" x2="4" y2="10" />
+              <line x1="18" y1="14" x2="20" y2="10" />
+              {/* neck */}
+              <rect x="9" y="4" width="6" height="6" rx="1" />
+              {/* cap */}
+              <line x1="8" y1="4" x2="16" y2="4" />
+              {/* label stripe */}
+              <line x1="6" y1="20" x2="18" y2="20" />
+            </svg>
           </h1>
           <p
             className="text-sm"
@@ -517,6 +568,40 @@ export default function Page() {
 
         {route && (
           <>
+            {/* ── Opener ────────────────────────────────────────────────── */}
+            <div
+              className="fade-up"
+              style={{
+                borderLeft: '3px solid #F59E0B',
+                paddingLeft: '20px',
+                animationDelay: '0.02s',
+              }}
+            >
+              <p
+                style={{
+                  fontFamily: 'Satoshi, sans-serif',
+                  fontStyle: 'italic',
+                  fontSize: '1rem',
+                  color: '#374151',
+                  lineHeight: 1.55,
+                }}
+              >
+                {openerQuote}
+              </p>
+              {pacingQuote && (
+                <p
+                  className="mt-1"
+                  style={{
+                    fontFamily: 'Satoshi, sans-serif',
+                    fontSize: '0.875rem',
+                    color: '#8896AB',
+                  }}
+                >
+                  {pacingQuote}
+                </p>
+              )}
+            </div>
+
             {/* ── Ride settings ─────────────────────────────────────────── */}
             <div
               className="rounded-2xl px-6 py-6 fade-up"
@@ -740,6 +825,7 @@ export default function Page() {
               <ElevationProfile
                 profile={route.elevationProfile}
                 hardestClimb={route.hardestClimb}
+                elevationGain={route.elevationGain}
               />
             </div>
 
@@ -835,13 +921,38 @@ export default function Page() {
           className="text-base font-bold mb-1"
           style={{ color: '#0B1220' }}
         >
-          Knecht<span style={{ color: '#F59E0B' }}>.</span>
+          Knecht
+          <svg
+            viewBox="0 0 24 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            style={{
+              display: 'inline-block',
+              verticalAlign: 'middle',
+              height: '0.85em',
+              width: 'auto',
+              marginLeft: '0.06em',
+              marginBottom: '0.05em',
+            }}
+            stroke="#F59E0B"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="6" y="10" width="12" height="22" rx="4" />
+            <line x1="6" y1="14" x2="4" y2="10" />
+            <line x1="18" y1="14" x2="20" y2="10" />
+            <rect x="9" y="4" width="6" height="6" rx="1" />
+            <line x1="8" y1="4" x2="16" y2="4" />
+            <line x1="6" y1="20" x2="18" y2="20" />
+          </svg>
         </p>
         <p
           className="text-sm"
           style={{ color: '#6B7280' }}
         >
-          Jouw digitale meesterknecht.
+          {footerQuote}
         </p>
       </footer>
     </div>

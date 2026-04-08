@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import {
   ResponsiveContainer,
   AreaChart,
@@ -9,6 +10,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from 'recharts'
+import { getProfielQuote, getHardestClimbQuote } from '../data/quotes'
 
 export type ElevPoint = { distanceKm: number; elevation: number }
 
@@ -48,9 +50,10 @@ function ElevTooltip({
 type Props = {
   profile: ElevPoint[]
   hardestClimb: HardestClimb
+  elevationGain: number
 }
 
-export default function ElevationProfile({ profile, hardestClimb }: Props) {
+export default function ElevationProfile({ profile, hardestClimb, elevationGain }: Props) {
   const hasElevation = profile.some((p) => p.elevation > 0)
   if (!hasElevation) return null
 
@@ -58,6 +61,14 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
   const maxEle = Math.max(...profile.map((p) => p.elevation))
   const padding = Math.max(20, (maxEle - minEle) * 0.1)
   const yDomain = [Math.max(0, minEle - padding), maxEle + padding]
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const profielQuote = useMemo(() => getProfielQuote(elevationGain), [elevationGain])
+  const climbQuote   = useMemo(
+    () => hardestClimb ? getHardestClimbQuote(hardestClimb.avgGradient) : null,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [hardestClimb?.avgGradient],
+  )
 
   return (
     <div
@@ -71,17 +82,19 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
         >
           Profiel
         </p>
-        {hardestClimb ? (
-          <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
-            Pittigste klim: km {hardestClimb.startKm.toFixed(0)}–{hardestClimb.endKm.toFixed(0)},{' '}
+        <p className="text-sm italic mb-1.5" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
+          {profielQuote}
+        </p>
+        {hardestClimb && (
+          <p className="text-sm" style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}>
+            {climbQuote}{' '}
+            <span style={{ color: '#374151' }}>
+              km {hardestClimb.startKm.toFixed(0)}–{hardestClimb.endKm.toFixed(0)},
+            </span>{' '}
             <span className="font-semibold" style={{ color: '#F59E0B' }}>
               {hardestClimb.avgGradient.toFixed(1)}% gem
             </span>
-            , {hardestClimb.maxGradient.toFixed(0)}% max
-          </p>
-        ) : (
-          <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
-            Pannenkoek-vlak. Lekker in het wiel kruipen en doordraaien.
+            <span style={{ color: '#374151' }}>, {hardestClimb.maxGradient.toFixed(0)}% max</span>
           </p>
         )}
       </div>

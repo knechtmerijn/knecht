@@ -335,3 +335,116 @@ export const quotes = {
     "De knecht zorgt. Jij rijdt.",
   ],
 }
+
+// ─── Selectie-helpers ─────────────────────────────────────────────────────────
+// Voeg nieuwe strings toe aan de arrays hierboven — deze functies hoef je nooit aan te raken.
+
+/** Kies een willekeurig item uit een array. */
+export function pick<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+/** Opener boven alle secties, afgestemd op rit + condities. */
+export function getOpenerQuote(
+  distanceKm: number,
+  elevationGain: number,
+  avgTemp: number,
+  maxPrecip: number,
+  maxWind: number,
+): string {
+  const isLong    = distanceKm >= 130
+  const isMedium  = distanceKm >= 70
+  const isHilly   = elevationGain >= 600
+  const isWet     = maxPrecip >= 60
+  const isWindy   = maxWind >= 25
+  const isVeryHot = avgTemp >= 28
+  const isColdWet = avgTemp < 10 && isWet
+
+  if (isVeryHot) return pick(quotes.opener.hot)
+  if (isColdWet) return pick(quotes.opener.coldWet)
+  if (isLong && isHilly && (distanceKm >= 160 || elevationGain >= 2000)) return pick(quotes.opener.longHard)
+  if (isLong && isHilly) return pick(quotes.opener.longHilly)
+  if (isLong)            return pick(quotes.opener.longFlat)
+  if (isMedium && isWindy) return pick(quotes.opener.mediumWind)
+  if (isMedium && isHilly) return pick(quotes.opener.mediumHilly)
+  if (isMedium)          return pick(quotes.opener.mediumFlat)
+  if (isWet)             return pick(quotes.opener.easyWet)
+  return pick(quotes.opener.easyFlat)
+}
+
+/** Pacing-tip voor ritten langer dan 2 uur, anders null. */
+export function getPacingQuote(durationHours: number, elevationGain: number): string | null {
+  if (durationHours < 2) return null
+  const isVeryHard = durationHours >= 5 || elevationGain >= 2000
+  const isHilly    = elevationGain >= 600
+  if (isVeryHard) return pick(quotes.pacing.longHard)
+  if (isHilly)    return pick(quotes.pacing.longHilly)
+  return pick(quotes.pacing.longFlat)
+}
+
+/** Profielomschrijving op basis van hoogtemeters. */
+export function getProfielQuote(elevationGain: number): string {
+  if (elevationGain >= 600) return pick(quotes.profiel.hilly)
+  if (elevationGain >= 200) return pick(quotes.profiel.rolling)
+  return pick(quotes.profiel.flat)
+}
+
+/** Omschrijving van de pittigste klim op basis van gemiddeld stijgingspercentage. */
+export function getHardestClimbQuote(avgGradient: number): string {
+  if (avgGradient >= 10) return pick(quotes.hardestClimb.brutal)
+  if (avgGradient >= 7)  return pick(quotes.hardestClimb.hard)
+  return pick(quotes.hardestClimb.moderate)
+}
+
+/** Samenvatting van het weer op basis van temp, wind en neerslag. */
+export function getWeerQuote(avgTemp: number, maxWind: number, maxPrecip: number): string {
+  const isVeryCold  = avgTemp < 5
+  const isCold      = avgTemp < 12
+  const isWarm      = avgTemp >= 20 && avgTemp < 26
+  const isHot       = avgTemp >= 26
+  const isRainy     = maxPrecip >= 60
+  const isMaybeRain = maxPrecip >= 30 && maxPrecip < 60
+  const isVeryWindy = maxWind >= 40
+  const isWindy     = maxWind >= 30
+
+  if (isVeryWindy && isRainy) return pick(quotes.weer.windAndRain)
+  if (isVeryWindy)  return pick(quotes.weer.strongWind)
+  if (isWindy)      return pick(quotes.weer.wind)
+  if (isVeryCold && isRainy) return pick(quotes.weer.coldRain)
+  if (isRainy)      return pick(quotes.weer.rain)
+  if (isMaybeRain)  return pick(quotes.weer.chanceRain)
+  if (isVeryCold)   return pick(quotes.weer.veryCold)
+  if (isCold)       return pick(quotes.weer.cold)
+  if (isHot)        return pick(quotes.weer.sunnyHot)
+  if (isWarm)       return pick(quotes.weer.sunnyWarm)
+  return pick(quotes.weer.ideal)
+}
+
+/** Kledingadvies-intro op basis van temperatuur en neerslagkans. */
+export function getKitQuote(avgTemp: number, maxPrecip: number): string {
+  const isRainy = maxPrecip >= 50
+  if (avgTemp < 5)  return pick(isRainy ? quotes.kit.coldRain  : quotes.kit.veryCold)
+  if (avgTemp < 12) return pick(isRainy ? quotes.kit.coldRain  : quotes.kit.cold)
+  if (avgTemp < 18) return pick(isRainy ? quotes.kit.warmRain  : quotes.kit.mild)
+  if (avgTemp < 24) return pick(isRainy ? quotes.kit.warmRain  : quotes.kit.warm)
+  return pick(isRainy ? quotes.kit.warmRain : quotes.kit.hotSun)
+}
+
+/** Voedingsadvies-intro op basis van ritduur en temperatuur. */
+export function getVoedingQuote(durationHours: number, maxTemp: number): string {
+  if (maxTemp >= 25)       return pick(quotes.voeding.hot)
+  if (durationHours >= 5)  return pick(quotes.voeding.veryLong)
+  if (durationHours >= 3)  return pick(quotes.voeding.long)
+  if (durationHours >= 1.5) return pick(quotes.voeding.medium)
+  return pick(quotes.voeding.short)
+}
+
+/** Intro-zin voor de packing checklist. */
+export function getChecklistQuote(): string {
+  return pick(quotes.checklist)
+}
+
+/** Footertekst — willekeurig per sessie. */
+export function getFooterQuote(): string {
+  return pick(quotes.footer)
+}
