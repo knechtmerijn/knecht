@@ -89,26 +89,26 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: '#f5f7fa', border: '1px solid #e2e6ed' }}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
       {/* Header */}
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
+      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <p
-          className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+          className="text-xs font-medium uppercase mb-1.5"
+          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
         >
           Check voor vertrek
         </p>
-        <div className="flex items-center justify-between">
-          <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
             {allDone ? (
-              <span style={{ color: '#16a34a' }} className="font-semibold">
+              <span style={{ color: '#F59E0B', fontWeight: 600 }}>
                 Alles ingepakt — veel plezier!
               </span>
             ) : (
               <>
-                <span className="font-semibold" style={{ color: '#3366cc' }}>
+                <span className="font-semibold" style={{ color: '#0B1220' }}>
                   {doneCount}/{totalCount}
                 </span>{' '}
                 afgevinkt
@@ -117,39 +117,37 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
           </p>
           <span
             className="text-xs"
-            style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+            style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
           >
             {progressPct}%
           </span>
         </div>
-        {/* Progress bar */}
-        <div className="mt-2 h-1 rounded-full" style={{ background: '#e2e6ed' }}>
+        <div className="h-1 rounded-full" style={{ background: '#E5E7EB' }}>
           <div
-            className="h-1 rounded-full transition-all duration-300"
+            className="h-1 rounded-full transition-all duration-500"
             style={{
               width: `${progressPct}%`,
-              background: allDone ? '#16a34a' : '#3366cc',
+              background: '#F59E0B',
             }}
           />
         </div>
       </div>
 
       {/* List */}
-      <div className="divide-y" style={{ borderColor: '#e2e6ed' }}>
-        {items.map((item) => {
+      <div>
+        {items.map((item, i) => {
           const isChecked = checked.has(item.id)
           const isConditional = !!item.reason
           return (
             <label
               key={item.id}
-              className="flex items-center gap-4 px-5 py-3.5 cursor-pointer select-none transition-colors"
-              style={
-                isConditional && !isChecked
-                  ? { background: '#fffbeb' }
-                  : isChecked
-                  ? { background: '#f0f4ff' }
-                  : undefined
-              }
+              className="flex items-center gap-4 px-6 py-4 cursor-pointer select-none transition-colors"
+              style={{
+                borderTop: i > 0 ? '1px solid rgba(0,0,0,0.04)' : undefined,
+                background: isConditional && !isChecked
+                  ? 'rgba(245,158,11,0.05)'
+                  : undefined,
+              }}
             >
               <span className="relative shrink-0 flex items-center justify-center">
                 <input
@@ -159,11 +157,11 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
                   className="sr-only"
                 />
                 <span
-                  className="w-5 h-5 rounded flex items-center justify-center transition-all duration-150"
+                  className="w-5 h-5 rounded flex items-center justify-center transition-all duration-200"
                   style={
                     isChecked
-                      ? { background: '#3366cc', border: '2px solid #3366cc' }
-                      : { background: 'white', border: '2px solid #c5ccd6' }
+                      ? { background: '#F59E0B', border: '2px solid #F59E0B' }
+                      : { background: 'transparent', border: '2px solid #D1D5DB' }
                   }
                   aria-hidden="true"
                 >
@@ -191,8 +189,9 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
                   className="text-sm font-medium"
                   style={{
                     fontFamily: 'Satoshi, sans-serif',
-                    color: isChecked ? '#6b7280' : '#0f1a3e',
+                    color: isChecked ? '#9CA3AF' : '#374151',
                     textDecoration: isChecked ? 'line-through' : 'none',
+                    transition: 'color 0.15s',
                   }}
                 >
                   {item.label}
@@ -203,13 +202,13 @@ export default function PackingChecklist({ hours, distanceKm, elevationGain }: P
                     style={
                       isChecked
                         ? {
-                            background: '#e2e6ed',
-                            color: '#6b7280',
+                            background: '#F3F4F6',
+                            color: '#9CA3AF',
                             fontFamily: 'Satoshi, sans-serif',
                           }
                         : {
-                            background: '#fef3c7',
-                            color: '#92400e',
+                            background: 'rgba(245,158,11,0.12)',
+                            color: '#D97706',
                             fontFamily: 'Satoshi, sans-serif',
                           }
                     }

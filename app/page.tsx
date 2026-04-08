@@ -15,7 +15,7 @@ const RouteMap = dynamic(() => import('./components/RouteMap'), {
   loading: () => (
     <div
       className="flex items-center justify-center h-[380px] text-sm"
-      style={{ background: '#f5f7fa', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+      style={{ background: '#F5F7FA', color: '#6B7280', fontFamily: 'Satoshi, sans-serif' }}
     >
       Kaart laden…
     </div>
@@ -180,13 +180,13 @@ function BikeIcon() {
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="w-14 h-14"
+      className="w-12 h-12"
       aria-hidden="true"
-      stroke="#f59e0b"
+      stroke="#F59E0B"
       strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      opacity={0.4}
+      opacity={0.6}
     >
       <circle cx="14" cy="44" r="10" />
       <circle cx="50" cy="44" r="10" />
@@ -321,65 +321,33 @@ export default function Page() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#f4f6fb', position: 'relative' }}>
-      {/* Decorative background route line */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          pointerEvents: 'none',
-          zIndex: 0,
-          overflow: 'hidden',
-        }}
-      >
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 720 2000"
-          preserveAspectRatio="none"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M 260 0 C 200 140 370 310 245 500 C 120 690 360 870 215 1080 C 70 1290 340 1450 195 1660 C 110 1800 255 1910 240 2000"
-            stroke="#f59e0b"
-            strokeWidth="3"
-            strokeOpacity="0.12"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+    <div className="min-h-screen flex flex-col" style={{ background: '#F5F7FA' }}>
 
       {/* Header */}
-      <header className="px-6 pt-10 pb-6" style={{ background: 'transparent', position: 'relative', zIndex: 1 }}>
+      <header className="px-6 pt-12 pb-8">
         <div className="max-w-[720px] mx-auto">
           <h1
-            className="tracking-tight mb-1"
+            className="tracking-tight mb-2"
             style={{
               fontFamily: 'Satoshi, sans-serif',
               fontWeight: 900,
-              color: '#0f1a3e',
-              fontSize: 'clamp(36px, 5vw, 52px)',
-              lineHeight: 1.05,
+              color: '#0B1220',
+              fontSize: 'clamp(40px, 6vw, 60px)',
+              lineHeight: 1,
             }}
           >
-            Knecht<span style={{ color: '#f59e0b' }}>.</span>
+            Knecht<span style={{ color: '#F59E0B' }}>.</span>
           </h1>
           <p
             className="text-sm"
-            style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+            style={{ color: '#6B7280', fontFamily: 'Satoshi, sans-serif' }}
           >
             Je digitale knecht. Upload, check, rijd.
           </p>
         </div>
       </header>
 
-      <main className="flex-1 max-w-[720px] w-full mx-auto px-4 py-10 space-y-6" style={{ position: 'relative', zIndex: 1 }}>
+      <main className="flex-1 max-w-[720px] w-full mx-auto px-4 pb-16 space-y-12">
 
         {/* ── Upload zone ─────────────────────────────────────────────────── */}
         {!route && (
@@ -392,28 +360,28 @@ export default function Page() {
             onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
             onDragLeave={() => setDragging(false)}
             onDrop={onDrop}
-            className="relative flex flex-col items-center justify-center gap-4 rounded-xl px-8 py-16 cursor-pointer transition-all duration-200 select-none"
+            className="relative flex flex-col items-center justify-center gap-5 rounded-2xl px-8 py-16 cursor-pointer transition-all duration-200 select-none"
             style={{
-              background: dragging ? '#fffbeb' : '#ffffff',
-              border: `2px dashed ${dragging ? '#f59e0b' : '#c5ccd6'}`,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+              background: dragging ? '#FFF8E6' : '#FFFFFF',
+              border: `2px dashed ${dragging ? 'rgba(245,158,11,0.5)' : 'rgba(0,0,0,0.1)'}`,
+              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
             }}
           >
             <BikeIcon />
             <div className="text-center">
               <p
-                className="text-lg"
+                className="text-lg mb-1"
                 style={{
                   fontFamily: 'Satoshi, sans-serif',
                   fontWeight: 700,
-                  color: '#0f1a3e',
+                  color: '#0B1220',
                 }}
               >
                 Drop je GPX hier
               </p>
               <p
-                className="text-sm mt-1"
-                style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+                className="text-sm"
+                style={{ color: '#6B7280', fontFamily: 'Satoshi, sans-serif' }}
               >
                 of klik om een bestand te kiezen
               </p>
@@ -421,9 +389,10 @@ export default function Page() {
             <span
               className="text-xs font-medium px-3 py-1 rounded-full"
               style={{
-                background: '#fff8e6',
-                color: '#b45309',
+                background: 'rgba(245,158,11,0.12)',
+                color: '#F59E0B',
                 fontFamily: 'Satoshi, sans-serif',
+                letterSpacing: '0.05em',
               }}
             >
               .gpx
@@ -441,15 +410,15 @@ export default function Page() {
         {/* ── Compact route bar (after upload) ────────────────────────────── */}
         {route && (
           <div
-            className="rounded-xl px-5 py-3.5 flex items-center justify-between gap-4 fade-up"
-            style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+            className="rounded-2xl px-6 py-4 flex items-center justify-between gap-4 fade-up"
+            style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
               <svg
                 viewBox="0 0 16 16"
                 fill="none"
                 className="w-4 h-4 shrink-0"
-                stroke="#f59e0b"
+                stroke="#F59E0B"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -459,13 +428,13 @@ export default function Page() {
               </svg>
               <span
                 className="text-sm font-medium truncate"
-                style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}
+                style={{ color: '#0B1220', fontFamily: 'Satoshi, sans-serif' }}
               >
                 {fileName}
               </span>
               <span
                 className="text-sm shrink-0"
-                style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+                style={{ color: '#6B7280', fontFamily: 'Satoshi, sans-serif' }}
               >
                 · {route.distanceKm.toFixed(1)} km
               </span>
@@ -473,9 +442,9 @@ export default function Page() {
             <button
               onClick={resetRoute}
               className="text-sm shrink-0 transition-colors"
-              style={{ color: '#3366cc', fontFamily: 'Satoshi, sans-serif' }}
-              onMouseOver={(e) => (e.currentTarget.style.color = '#1d4ed8')}
-              onMouseOut={(e) => (e.currentTarget.style.color = '#3366cc')}
+              style={{ color: '#6B7280', fontFamily: 'Satoshi, sans-serif' }}
+              onMouseOver={(e) => (e.currentTarget.style.color = '#0B1220')}
+              onMouseOut={(e) => (e.currentTarget.style.color = '#6B7280')}
             >
               Andere route laden
             </button>
@@ -491,11 +460,11 @@ export default function Page() {
 
         {error && (
           <div
-            className="rounded-xl px-5 py-4 text-sm"
+            className="rounded-2xl px-6 py-4 text-sm"
             style={{
-              background: '#fef2f2',
-              border: '1px solid #fecaca',
-              color: '#b91c1c',
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              color: '#f87171',
               fontFamily: 'Satoshi, sans-serif',
             }}
           >
@@ -507,33 +476,32 @@ export default function Page() {
           <>
             {/* ── Ride settings ─────────────────────────────────────────── */}
             <div
-              className="rounded-xl px-5 py-5 fade-up"
+              className="rounded-2xl px-6 py-6 fade-up"
               style={{
-                background: '#ffffff',
-                border: '1px solid #e2e6ed',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                background: '#FFFFFF',
+                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
                 animationDelay: '0.05s',
               }}
             >
               <p
-                className="text-xs font-medium uppercase mb-4"
+                className="text-xs font-medium uppercase mb-5"
                 style={{
                   letterSpacing: '0.05em',
-                  color: '#3366cc',
+                  color: '#8896AB',
                   fontFamily: 'Satoshi, sans-serif',
                 }}
               >
                 Rit instellen
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 <div>
                   <label
                     htmlFor="ride-date"
-                    className="block text-xs font-medium uppercase mb-1.5"
+                    className="block text-xs font-medium uppercase mb-2"
                     style={{
                       letterSpacing: '0.05em',
-                      color: '#6b7280',
+                      color: '#8896AB',
                       fontFamily: 'Satoshi, sans-serif',
                     }}
                   >
@@ -544,11 +512,11 @@ export default function Page() {
                     type="date"
                     value={rideDate}
                     onChange={(e) => setRideDate(e.target.value)}
-                    className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors"
                     style={{
-                      border: '1px solid #e2e6ed',
-                      background: '#ffffff',
-                      color: '#0f1a3e',
+                      background: '#F5F7FA',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      color: '#0B1220',
                       fontFamily: 'Satoshi, sans-serif',
                     }}
                   />
@@ -557,10 +525,10 @@ export default function Page() {
                 <div>
                   <label
                     htmlFor="ride-time"
-                    className="block text-xs font-medium uppercase mb-1.5"
+                    className="block text-xs font-medium uppercase mb-2"
                     style={{
                       letterSpacing: '0.05em',
-                      color: '#6b7280',
+                      color: '#8896AB',
                       fontFamily: 'Satoshi, sans-serif',
                     }}
                   >
@@ -571,34 +539,33 @@ export default function Page() {
                     type="time"
                     value={rideTime}
                     onChange={(e) => setRideTime(e.target.value)}
-                    className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+                    className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-colors"
                     style={{
-                      border: '1px solid #e2e6ed',
-                      background: '#ffffff',
-                      color: '#0f1a3e',
+                      background: '#F5F7FA',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      color: '#0B1220',
                       fontFamily: 'Satoshi, sans-serif',
                     }}
                   />
                 </div>
 
                 <div>
-                  <div className="flex justify-between items-baseline mb-1.5">
+                  <div className="flex justify-between items-baseline mb-2">
                     <label
                       htmlFor="avg-speed"
                       className="text-xs font-medium uppercase"
                       style={{
                         letterSpacing: '0.05em',
-                        color: '#6b7280',
+                        color: '#8896AB',
                         fontFamily: 'Satoshi, sans-serif',
                       }}
                     >
                       Gem. snelheid
                     </label>
                     <span
-                      className="text-base font-bold"
-                      style={{ fontFamily: 'Satoshi, sans-serif', color: '#3366cc' }}
+                      style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '1.1rem', color: '#F59E0B' }}
                     >
-                      {avgSpeedKmh} km/u
+                      {avgSpeedKmh} <span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#8896AB' }}>km/u</span>
                     </span>
                   </div>
                   <input
@@ -610,11 +577,10 @@ export default function Page() {
                     value={avgSpeedKmh}
                     onChange={(e) => setAvgSpeedKmh(Number(e.target.value))}
                     className="w-full"
-                    style={{ accentColor: '#3366cc' }}
                   />
                   <div
-                    className="flex justify-between text-xs mt-0.5"
-                    style={{ color: '#c5ccd6', fontFamily: 'Satoshi, sans-serif' }}
+                    className="flex justify-between text-xs mt-1"
+                    style={{ color: '#D1D5DB', fontFamily: 'Satoshi, sans-serif' }}
                   >
                     <span>20</span>
                     <span>38</span>
@@ -623,8 +589,8 @@ export default function Page() {
               </div>
 
               <p
-                className="mt-4 text-xs"
-                style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+                className="mt-5 text-xs"
+                style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
               >
                 Geschatte rijtijd:{' '}
                 <span className="font-semibold" style={{ color: '#374151' }}>
@@ -637,39 +603,38 @@ export default function Page() {
             {/* ── Route stats + map ──────────────────────────────────────── */}
             <div className="fade-up" style={{ animationDelay: '0.1s' }}>
               <div
-                className="rounded-t-xl px-5 py-5"
-                style={{ background: '#ffffff', border: '1px solid #e2e6ed', borderBottom: 'none', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+                className="rounded-t-2xl px-6 py-6"
+                style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.06)' }}
               >
                 <p
-                  className="text-xs font-medium uppercase mb-4"
+                  className="text-xs font-medium uppercase mb-5"
                   style={{
                     letterSpacing: '0.05em',
-                    color: '#3366cc',
+                    color: '#8896AB',
                     fontFamily: 'Satoshi, sans-serif',
                   }}
                 >
                   Route
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
                   <div>
                     <p
-                      className="text-xs font-medium uppercase mb-1"
+                      className="text-xs font-medium uppercase mb-1.5"
                       style={{
                         letterSpacing: '0.05em',
-                        color: '#6b7280',
+                        color: '#8896AB',
                         fontFamily: 'Satoshi, sans-serif',
                       }}
                     >
                       Afstand
                     </p>
                     <p
-                      className="text-2xl font-bold"
-                      style={{ fontFamily: 'Satoshi, sans-serif', color: '#0f1a3e' }}
+                      className="leading-none"
+                      style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '2rem', color: '#0B1220' }}
                     >
                       {route.distanceKm.toFixed(1)}{' '}
                       <span
-                        className="text-base font-normal"
-                        style={{ color: '#6b7280' }}
+                        style={{ fontSize: '1rem', fontWeight: 400, color: '#8896AB' }}
                       >
                         km
                       </span>
@@ -677,23 +642,22 @@ export default function Page() {
                   </div>
                   <div>
                     <p
-                      className="text-xs font-medium uppercase mb-1"
+                      className="text-xs font-medium uppercase mb-1.5"
                       style={{
                         letterSpacing: '0.05em',
-                        color: '#6b7280',
+                        color: '#8896AB',
                         fontFamily: 'Satoshi, sans-serif',
                       }}
                     >
                       Hoogtemeters
                     </p>
                     <p
-                      className="text-2xl font-bold"
-                      style={{ fontFamily: 'Satoshi, sans-serif', color: '#0f1a3e' }}
+                      className="leading-none"
+                      style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '2rem', color: '#0B1220' }}
                     >
                       {route.elevationGain.toLocaleString('nl-NL')}{' '}
                       <span
-                        className="text-base font-normal"
-                        style={{ color: '#6b7280' }}
+                        style={{ fontSize: '1rem', fontWeight: 400, color: '#8896AB' }}
                       >
                         m
                       </span>
@@ -701,10 +665,10 @@ export default function Page() {
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <p
-                      className="text-xs font-medium uppercase mb-1"
+                      className="text-xs font-medium uppercase mb-1.5"
                       style={{
                         letterSpacing: '0.05em',
-                        color: '#6b7280',
+                        color: '#8896AB',
                         fontFamily: 'Satoshi, sans-serif',
                       }}
                     >
@@ -721,8 +685,8 @@ export default function Page() {
                 </div>
               </div>
               <div
-                className="rounded-b-xl overflow-hidden"
-                style={{ border: '1px solid #e2e6ed' }}
+                className="rounded-b-2xl overflow-hidden"
+                style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
               >
                 <RouteMap points={mapPoints} />
               </div>
@@ -739,11 +703,10 @@ export default function Page() {
             {/* ── Weather ────────────────────────────────────────────────── */}
             {weatherLoading && (
               <div
-                className="rounded-xl px-5 py-8 text-center text-sm fade-up"
+                className="rounded-2xl px-6 py-8 text-center text-sm fade-up"
                 style={{
-                  background: '#f5f7fa',
-                  border: '1px solid #e2e6ed',
-                  color: '#6b7280',
+                  background: '#FFFFFF',
+                  color: '#6B7280',
                   fontFamily: 'Satoshi, sans-serif',
                   animationDelay: '0.2s',
                 }}
@@ -753,11 +716,11 @@ export default function Page() {
             )}
             {weatherError && (
               <div
-                className="rounded-xl px-5 py-4 text-sm"
+                className="rounded-2xl px-6 py-4 text-sm"
                 style={{
-                  background: '#fef2f2',
-                  border: '1px solid #fecaca',
-                  color: '#b91c1c',
+                  background: 'rgba(239,68,68,0.08)',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  color: '#f87171',
                   fontFamily: 'Satoshi, sans-serif',
                 }}
               >
@@ -798,11 +761,10 @@ export default function Page() {
 
             {!weatherLoading && !weatherError && allWeather && rideHours.length === 0 && (
               <div
-                className="rounded-xl px-5 py-6 text-sm text-center fade-up"
+                className="rounded-2xl px-6 py-6 text-sm text-center fade-up"
                 style={{
-                  background: '#f5f7fa',
-                  border: '1px solid #e2e6ed',
-                  color: '#6b7280',
+                  background: '#FFFFFF',
+                  color: '#6B7280',
                   fontFamily: 'Satoshi, sans-serif',
                   animationDelay: '0.2s',
                 }}
@@ -816,16 +778,26 @@ export default function Page() {
       </main>
 
       <footer
-        className="text-center py-6 text-xs"
+        className="text-center"
         style={{
-          color: '#6b7280',
-          borderTop: '1px solid #e2e6ed',
+          borderTop: '1px solid rgba(0,0,0,0.06)',
           fontFamily: 'Satoshi, sans-serif',
-          position: 'relative',
-          zIndex: 1,
+          paddingTop: '48px',
+          paddingBottom: '48px',
         }}
       >
-        Knecht. Jouw digitale meesterknecht.
+        <p
+          className="text-base font-bold mb-1"
+          style={{ color: '#0B1220' }}
+        >
+          Knecht<span style={{ color: '#F59E0B' }}>.</span>
+        </p>
+        <p
+          className="text-sm"
+          style={{ color: '#6B7280' }}
+        >
+          Jouw digitale meesterknecht.
+        </p>
       </footer>
     </div>
   )

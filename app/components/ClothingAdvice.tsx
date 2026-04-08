@@ -60,40 +60,41 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
-      {/* Header */}
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
+      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <p
-          className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#3366cc', fontFamily: 'Satoshi, sans-serif' }}
+          className="text-xs font-medium uppercase mb-1.5"
+          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
         >
           Kit check
         </p>
-        <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
+        <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
           Gem.{' '}
-          <span className="font-semibold" style={{ color: '#3366cc' }}>
+          <span className="font-semibold" style={{ color: '#0B1220' }}>
             {Math.round(avgTemp)}°
           </span>{' '}
           tijdens de rit
         </p>
       </div>
 
-      {/* Category rows */}
-      <div className="divide-y" style={{ borderColor: '#e2e6ed' }}>
-        {categories.map((cat) => (
+      <div>
+        {categories.map((cat, i) => (
           <div
             key={cat.label}
-            className="flex gap-4 px-5 py-4"
-            style={cat.accent ? { background: '#eff6ff' } : undefined}
+            className="flex gap-4 px-6 py-5"
+            style={{
+              borderTop: i > 0 ? '1px solid rgba(0,0,0,0.04)' : undefined,
+              background: cat.accent ? 'rgba(245,158,11,0.05)' : undefined,
+            }}
           >
             <div className="flex-1 min-w-0">
               <p
-                className="text-xs font-medium uppercase mb-2"
+                className="text-xs font-medium uppercase mb-3"
                 style={{
                   letterSpacing: '0.05em',
-                  color: '#3366cc',
+                  color: cat.accent ? '#F59E0B' : '#8896AB',
                   fontFamily: 'Satoshi, sans-serif',
                 }}
               >
@@ -103,21 +104,12 @@ export default function ClothingAdvice({ hours }: { hours: HourlyWeather[] }) {
                 {cat.items.map((item) => (
                   <span
                     key={item}
-                    className="text-sm px-3 py-1 rounded-full"
-                    style={
-                      cat.accent
-                        ? {
-                            background: '#dbeafe',
-                            color: '#1e40af',
-                            fontWeight: 500,
-                            fontFamily: 'Satoshi, sans-serif',
-                          }
-                        : {
-                            background: '#e8f0fd',
-                            color: '#3366cc',
-                            fontFamily: 'Satoshi, sans-serif',
-                          }
-                    }
+                    className="text-sm px-4 py-2 rounded-full"
+                    style={{
+                      background: '#F5F7FA',
+                      color: '#374151',
+                      fontFamily: 'Satoshi, sans-serif',
+                    }}
                   >
                     {item}
                   </span>

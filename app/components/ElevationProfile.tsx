@@ -31,10 +31,15 @@ function ElevTooltip({
   const d = payload[0].payload
   return (
     <div
-      className="text-xs px-3 py-2 rounded-lg shadow"
-      style={{ background: '#0f1a3e', color: '#fff', fontFamily: 'Satoshi, sans-serif' }}
+      className="text-xs px-3 py-2 rounded-lg"
+      style={{
+        background: '#0B1220',
+        color: '#F5F7FA',
+        fontFamily: 'Satoshi, sans-serif',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+      }}
     >
-      <span style={{ color: '#94a3b8' }}>{d.distanceKm.toFixed(1)} km</span>
+      <span style={{ color: '#8896AB' }}>{d.distanceKm.toFixed(1)} km</span>
       <span className="ml-2 font-semibold">{d.elevation} m</span>
     </div>
   )
@@ -56,21 +61,20 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
-      {/* Header */}
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
+      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <p
-          className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#3366cc', fontFamily: 'Satoshi, sans-serif' }}
+          className="text-xs font-medium uppercase mb-1.5"
+          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
         >
           Profiel
         </p>
         {hardestClimb ? (
-          <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
+          <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
             Pittigste klim: km {hardestClimb.startKm.toFixed(0)}–{hardestClimb.endKm.toFixed(0)},{' '}
-            <span className="font-semibold" style={{ color: '#3366cc' }}>
+            <span className="font-semibold" style={{ color: '#F59E0B' }}>
               {hardestClimb.avgGradient.toFixed(1)}% gem
             </span>
             , {hardestClimb.maxGradient.toFixed(0)}% max
@@ -82,18 +86,17 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
         )}
       </div>
 
-      {/* Chart */}
-      <div className="px-5 pt-4 pb-4">
+      <div className="px-5 pt-4 pb-5">
         <ResponsiveContainer width="100%" height={180}>
           <AreaChart data={profile} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="elevGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#3366cc" stopOpacity={0.5} />
-                <stop offset="100%" stopColor="#3366cc" stopOpacity={0} />
+                <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e6ed" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
 
             <XAxis
               dataKey="distanceKm"
@@ -101,7 +104,7 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
               domain={['dataMin', 'dataMax']}
               tickCount={6}
               tickFormatter={(v: number) => `${v.toFixed(0)} km`}
-              tick={{ fontSize: 11, fill: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+              tick={{ fontSize: 11, fill: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
               axisLine={false}
               tickLine={false}
             />
@@ -110,7 +113,7 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
               domain={yDomain}
               tickCount={4}
               tickFormatter={(v: number) => `${v} m`}
-              tick={{ fontSize: 11, fill: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+              tick={{ fontSize: 11, fill: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
               axisLine={false}
               tickLine={false}
               width={52}
@@ -122,11 +125,11 @@ export default function ElevationProfile({ profile, hardestClimb }: Props) {
             <Area
               type="monotone"
               dataKey="elevation"
-              stroke="#3366cc"
+              stroke="#F59E0B"
               strokeWidth={2}
               fill="url(#elevGradient)"
               dot={false}
-              activeDot={{ r: 4, fill: '#3366cc', stroke: '#fff', strokeWidth: 2 }}
+              activeDot={{ r: 4, fill: '#F59E0B', stroke: '#FFFFFF', strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>

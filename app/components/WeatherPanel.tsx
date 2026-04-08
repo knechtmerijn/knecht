@@ -39,7 +39,7 @@ function WindArrow({ deg }: { deg: number }) {
         transform: `rotate(${deg}deg)`,
         fontSize: '11px',
         lineHeight: 1,
-        color: '#6b7280',
+        color: '#8896AB',
       }}
     >
       ↑
@@ -48,18 +48,18 @@ function WindArrow({ deg }: { deg: number }) {
 }
 
 function PrecipBar({ prob }: { prob: number }) {
-  const color = prob >= 60 ? '#3366cc' : prob >= 30 ? '#6691dd' : '#adc0ef'
+  const fillColor = prob >= 60 ? '#F59E0B' : prob >= 30 ? '#8896AB' : '#D1D5DB'
   return (
     <div className="flex flex-col items-center gap-0.5 w-full">
-      <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: '#e2e6ed' }}>
+      <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: '#E5E7EB' }}>
         <div
-          style={{ width: `${prob}%`, background: color, transition: 'width 0.3s' }}
+          style={{ width: `${prob}%`, background: fillColor, transition: 'width 0.3s' }}
           className="h-full rounded-full"
         />
       </div>
       <span
         className="text-xs"
-        style={{ color: prob >= 30 ? '#3366cc' : '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+        style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
       >
         {prob}%
       </span>
@@ -93,43 +93,41 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
-      {/* Header */}
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
+      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <p
-          className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#3366cc', fontFamily: 'Satoshi, sans-serif' }}
+          className="text-xs font-medium uppercase mb-1.5"
+          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
         >
           Weer · {formatDuration(durationHours)} rijden
         </p>
-        <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
+        <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
           Vertrek{' '}
-          <span className="font-semibold" style={{ color: '#3366cc' }}>
+          <span className="font-semibold" style={{ color: '#0B1220' }}>
             {Math.round(first.temp)}°
           </span>
           {hours.length > 2 && (
             <>
               {', halverwege '}
-              <span className="font-semibold" style={{ color: '#3366cc' }}>
+              <span className="font-semibold" style={{ color: '#0B1220' }}>
                 {Math.round(mid.temp)}°
               </span>
             </>
           )}
           {' · wind '}
-          <span className="font-semibold" style={{ color: '#0f1a3e' }}>
+          <span className="font-semibold" style={{ color: '#0B1220' }}>
             {midCompass} {Math.round(mid.windspeed)} km/u
           </span>
           {mid.precipProb >= 30 && (
-            <span style={{ color: '#3366cc' }}>
+            <span style={{ color: '#F59E0B' }}>
               {' '}· {mid.precipProb}% neerslag
             </span>
           )}
         </p>
       </div>
 
-      {/* Hourly cards – horizontal scroll */}
       <div className="px-4 py-4 overflow-x-auto">
         <div className="flex gap-2" style={{ minWidth: 'max-content' }}>
           {hours.map((h) => {
@@ -140,11 +138,11 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
                 key={h.time}
                 title={label}
                 className="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl"
-                style={{ minWidth: '72px', background: '#f5f7fa', border: '1px solid #e2e6ed' }}
+                style={{ minWidth: '72px', background: '#F5F7FA' }}
               >
                 <span
                   className="text-xs font-medium"
-                  style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+                  style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
                 >
                   {formatHourLabel(h.time)}
                 </span>
@@ -153,20 +151,20 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
                 </span>
                 <span
                   className="text-lg font-bold leading-none"
-                  style={{ fontFamily: 'Satoshi, sans-serif', color: '#0f1a3e' }}
+                  style={{ fontFamily: 'Satoshi, sans-serif', color: '#0B1220' }}
                 >
                   {Math.round(h.temp)}°
                 </span>
                 <div
                   className="flex items-center gap-1 text-xs"
-                  style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+                  style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
                 >
                   <WindArrow deg={h.winddir} />
                   <span>{compass}</span>
                 </div>
                 <span
                   className="text-xs"
-                  style={{ color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+                  style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
                 >
                   {Math.round(h.windspeed)} km/u
                 </span>

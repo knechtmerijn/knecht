@@ -80,24 +80,23 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
 
   return (
     <div
-      className="rounded-xl overflow-hidden"
-      style={{ background: '#ffffff', border: '1px solid #e2e6ed', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}
+      className="rounded-2xl overflow-hidden"
+      style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
-      {/* Header */}
-      <div className="px-5 py-4" style={{ borderBottom: '1px solid #e2e6ed' }}>
+      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
         <p
-          className="text-xs font-medium uppercase mb-1"
-          style={{ letterSpacing: '0.05em', color: '#3366cc', fontFamily: 'Satoshi, sans-serif' }}
+          className="text-xs font-medium uppercase mb-1.5"
+          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
         >
           Achterzakken
         </p>
-        <p className="text-sm" style={{ color: '#0f1a3e', fontFamily: 'Satoshi, sans-serif' }}>
+        <p className="text-sm" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
           Voor{' '}
-          <span className="font-semibold" style={{ color: '#3366cc' }}>
+          <span className="font-semibold" style={{ color: '#0B1220' }}>
             {distanceKm.toFixed(0)} km
           </span>{' '}
           en{' '}
-          <span className="font-semibold" style={{ color: '#3366cc' }}>
+          <span className="font-semibold" style={{ color: '#0B1220' }}>
             {Math.floor(durationHours)}u
             {Math.round((durationHours % 1) * 60).toString().padStart(2, '0')}
           </span>{' '}
@@ -107,37 +106,52 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
 
       {/* Stats row */}
       <div
-        className="grid border-b"
-        style={{ gridTemplateColumns: `repeat(${stats.length}, 1fr)`, background: '#f0f4fc', borderColor: '#e2e6ed' }}
+        className="grid"
+        style={{
+          gridTemplateColumns: `repeat(${stats.length}, 1fr)`,
+          background: '#F5F7FA',
+          borderBottom: '1px solid rgba(0,0,0,0.06)',
+        }}
       >
-        {stats.map((s) => (
-          <div key={s.label} className="px-5 py-4 border-r last:border-r-0" style={{ borderColor: '#e2e6ed' }}>
+        {stats.map((s, i) => (
+          <div
+            key={s.label}
+            className="px-6 py-5"
+            style={{ borderRight: i < stats.length - 1 ? '1px solid rgba(0,0,0,0.06)' : undefined }}
+          >
             <p
-              className="text-xs font-medium uppercase mb-0.5"
-              style={{ letterSpacing: '0.05em', color: '#6b7280', fontFamily: 'Satoshi, sans-serif' }}
+              className="text-xs font-medium uppercase mb-1"
+              style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
             >
               {s.label}
             </p>
             <p
-              className="text-2xl font-bold leading-none"
-              style={{ fontFamily: 'Satoshi, sans-serif', color: '#0f1a3e' }}
+              className="leading-none"
+              style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '1.75rem', color: '#0B1220' }}
             >
               {s.value}{' '}
-              <span className="text-sm font-normal" style={{ color: '#6b7280' }}>{s.unit}</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 400, color: '#8896AB' }}>{s.unit}</span>
             </p>
           </div>
         ))}
       </div>
 
       {/* Detail blocks */}
-      <div className="divide-y" style={{ borderColor: '#e2e6ed' }}>
-        {blocks.map((b) => (
-          <div key={b.label} className="px-5 py-4" style={b.warning ? { background: '#fffbeb' } : undefined}>
+      <div>
+        {blocks.map((b, i) => (
+          <div
+            key={b.label}
+            className="px-6 py-5"
+            style={{
+              borderTop: i > 0 ? '1px solid rgba(0,0,0,0.04)' : undefined,
+              background: b.warning ? 'rgba(245,158,11,0.06)' : undefined,
+            }}
+          >
             <p
-              className="text-xs font-medium uppercase mb-1"
+              className="text-xs font-medium uppercase mb-1.5"
               style={{
                 letterSpacing: '0.05em',
-                color: b.warning ? '#b45309' : '#3366cc',
+                color: b.warning ? '#F59E0B' : '#8896AB',
                 fontFamily: 'Satoshi, sans-serif',
               }}
             >
@@ -145,7 +159,7 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
             </p>
             <p
               className="text-sm leading-relaxed"
-              style={{ color: b.warning ? '#92400e' : '#374151', fontFamily: 'Satoshi, sans-serif' }}
+              style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}
             >
               {b.detail}
             </p>
