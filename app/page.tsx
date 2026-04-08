@@ -172,6 +172,47 @@ function parseGpx(text: string): RouteData {
   }
 }
 
+// ─── Decorative background line ──────────────────────────────────────────────
+
+function DecorativeLine() {
+  return (
+    <svg
+      aria-hidden="true"
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        zIndex: 0,
+        pointerEvents: 'none',
+      }}
+      viewBox="0 0 100 1000"
+      preserveAspectRatio="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <linearGradient id="lineGradient" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#F59E0B" />
+          <stop offset="100%" stopColor="#EC4899" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M 40 0
+           C 58 80,  22 160, 38 240
+           C 54 320, 20 400, 42 480
+           C 62 560, 18 640, 36 720
+           C 56 800, 24 880, 40 1000"
+        fill="none"
+        stroke="url(#lineGradient)"
+        strokeWidth="3"
+        opacity="0.2"
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  )
+}
+
 // ─── Upload zone bike icon ────────────────────────────────────────────────────
 
 function BikeIcon() {
@@ -323,8 +364,10 @@ export default function Page() {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#F5F7FA' }}>
 
+      <DecorativeLine />
+
       {/* Header */}
-      <header className="px-6 pt-12 pb-8">
+      <header className="px-6 pt-12 pb-8" style={{ position: 'relative', zIndex: 1 }}>
         <div className="max-w-[720px] mx-auto">
           <h1
             className="tracking-tight mb-2"
@@ -347,7 +390,7 @@ export default function Page() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-[720px] w-full mx-auto px-4 pb-16 space-y-12">
+      <main className="flex-1 max-w-[720px] w-full mx-auto px-4 pb-16 space-y-12" style={{ position: 'relative', zIndex: 1 }}>
 
         {/* ── Upload zone ─────────────────────────────────────────────────── */}
         {!route && (
@@ -780,6 +823,8 @@ export default function Page() {
       <footer
         className="text-center"
         style={{
+          position: 'relative',
+          zIndex: 1,
           borderTop: '1px solid rgba(0,0,0,0.06)',
           fontFamily: 'Satoshi, sans-serif',
           paddingTop: '48px',
