@@ -18,58 +18,59 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
   const maxTemp = Math.max(...hours.map((h) => h.temp))
   const kcal = Math.round(distanceKm * 25)
 
+  // ── Koolhydraten ──────────────────────────────────────────────────────────
   let carbsBlock: Block
   if (durationMin < 60) {
-    carbsBlock = { label: 'Koolhydraten', detail: 'Alleen een bidon water is genoeg.' }
+    carbsBlock = { label: 'Eten', detail: 'Goed ontbijten voor de start. Onderweg heb je niks nodig.' }
   } else if (durationMin < 90) {
-    carbsBlock = { label: 'Koolhydraten', detail: 'Neem 1 gel of reep mee voor het laatste half uur.' }
-  } else {
-    const nItems = Math.max(1, Math.ceil((durationHours - 1) * 2))
-    const nGels = Math.ceil(nItems / 2)
-    const nRepen = Math.floor(nItems / 2)
-    const totalCarbs = nGels * 25 + nRepen * 30
-    const itemStr = [
-      nGels > 0 ? `${nGels} gel${nGels > 1 ? 's' : ''}` : '',
-      nRepen > 0 ? `${nRepen} rijstwafel${nRepen > 1 ? 's' : ''}` : '',
-    ].filter(Boolean).join(' + ')
+    carbsBlock = { label: 'Eten', detail: 'Één gel of reep mee voor de tweede helft. Niet vergeten.' }
+  } else if (durationMin < 180) {
     carbsBlock = {
-      label: 'Koolhydraten',
-      detail: `${totalCarbs}g onderweg: ${itemStr}. Eerste gel na 45 min, daarna elke 30 min.`,
+      label: 'Eten',
+      detail: 'Elke 30 minuten iets naar binnen. Gel, rijstwafel, banaan — maakt niet uit. Niet wachten tot je honger hebt.',
+    }
+  } else {
+    carbsBlock = {
+      label: 'Eten',
+      detail: 'Elke 20 minuten iets eten. Vroeg beginnen, blijven tanken. De man met de hamer wacht niet.',
     }
   }
 
+  // ── Drinken ───────────────────────────────────────────────────────────────
   let drinkBlock: Block
   if (maxTemp > 30) {
     drinkBlock = {
       label: 'Drinken',
-      detail: 'Plan een waterstop in. 2 bidons is niet genoeg. Dehydratie is geen bonificatie.',
+      detail: 'Plan een waterstop in. 2 bidons is vandaag niet genoeg. Dehydratie is geen bonificatie.',
       warning: true,
     }
   } else {
     const mlPerHour = maxTemp > 25 ? 750 : 500
-    const totalMl = Math.round(mlPerHour * durationHours)
-    const nBidons = Math.ceil(totalMl / 500)
-    drinkBlock = {
-      label: 'Drinken',
-      detail: `${totalMl} ml — ${nBidons} bidon${nBidons > 1 ? 's' : ''}${maxTemp > 25 ? '. Extra bidon. Dehydratie is geen bonificatie.' : '.'}`,
-    }
+    const nBidons = Math.max(1, Math.ceil((mlPerHour * durationHours) / 500))
+    const stopKm = Math.round(distanceKm * 0.55)
+    const drinkDetail = nBidons > 2
+      ? `Elke uur een bidon leegdrinken. ${nBidons} bidons voor deze rit — plan een bijvulstop rond km ${stopKm}.`
+      : `Elke uur een bidon leegdrinken. ${nBidons} bidon${nBidons > 1 ? 's' : ''} is genoeg voor deze afstand.`
+    drinkBlock = { label: 'Drinken', detail: drinkDetail + (maxTemp > 25 ? ' Warm weer: meer drinken dan je denkt.' : '') }
   }
 
+  // ── Elektrolyten ─────────────────────────────────────────────────────────
   const needsElectrolytes = durationHours > 2 || maxTemp > 25
   const electrolytesBlock: Block | null = needsElectrolytes
-    ? { label: 'Elektrolyten', detail: 'Elektrolytentablet in minstens 1 bidon.' }
+    ? { label: 'Elektrolyten', detail: 'Gooi een tablet in je eerste bidon. Na 2 uur fietsen gaat het verschil maken.' }
     : null
 
+  // ── Stats ─────────────────────────────────────────────────────────────────
   const stats: Stat[] = [{ value: kcal.toLocaleString('nl-NL'), unit: 'kcal', label: 'Verbruik' }]
   if (durationMin >= 90) {
     const nItems = Math.max(1, Math.ceil((durationHours - 1) * 2))
-    const nGels = Math.ceil(nItems / 2)
+    const nGels  = Math.ceil(nItems / 2)
     const nRepen = Math.floor(nItems / 2)
     stats.push({ value: `${nGels * 25 + nRepen * 30}`, unit: 'g koolh.', label: 'Onderweg' })
   }
   if (maxTemp <= 30) {
     const mlPerHour = maxTemp > 25 ? 750 : 500
-    const nBidons = Math.ceil(Math.round(mlPerHour * durationHours) / 500)
+    const nBidons = Math.max(1, Math.ceil((mlPerHour * durationHours) / 500))
     stats.push({ value: `${nBidons}`, unit: `bidon${nBidons > 1 ? 's' : ''}`, label: 'Vocht' })
   }
 
@@ -92,23 +93,23 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
       className="rounded-2xl overflow-hidden"
       style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
-      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <p
-          className="text-xs font-medium uppercase mb-1.5"
-          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
-        >
+      <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <p style={{
+          fontFamily: 'Satoshi, sans-serif',
+          fontWeight: 900,
+          fontSize: 'clamp(22px, 4vw, 28px)',
+          color: '#0B1220',
+          lineHeight: 1.1,
+          marginBottom: 10,
+        }}>
           Achterzakken
         </p>
-        <p className="text-sm italic mb-1" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
+        <p className="text-sm italic" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
           {voedingQuote}
-        </p>
-        <p className="text-xs" style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}>
-          {distanceKm.toFixed(0)} km ·{' '}
-          {Math.floor(durationHours)}u{Math.round((durationHours % 1) * 60).toString().padStart(2, '0')} rijden
         </p>
       </div>
 
-      {/* Stats row */}
+      {/* Stats row — iets kleiner */}
       <div
         className="grid"
         style={{
@@ -120,7 +121,7 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
         {stats.map((s, i) => (
           <div
             key={s.label}
-            className="px-6 py-5"
+            className="px-5 py-4"
             style={{ borderRight: i < stats.length - 1 ? '1px solid rgba(0,0,0,0.06)' : undefined }}
           >
             <p
@@ -131,10 +132,10 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
             </p>
             <p
               className="leading-none"
-              style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '1.75rem', color: '#0B1220' }}
+              style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '1.3rem', color: '#0B1220' }}
             >
               {s.value}{' '}
-              <span style={{ fontSize: '0.875rem', fontWeight: 400, color: '#8896AB' }}>{s.unit}</span>
+              <span style={{ fontSize: '0.8rem', fontWeight: 400, color: '#8896AB' }}>{s.unit}</span>
             </p>
           </div>
         ))}
@@ -145,7 +146,7 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
         {blocks.map((b, i) => (
           <div
             key={b.label}
-            className="px-6 py-5"
+            className="px-6 py-4"
             style={{
               borderTop: i > 0 ? '1px solid rgba(0,0,0,0.04)' : undefined,
               background: b.warning ? 'rgba(245,158,11,0.06)' : undefined,

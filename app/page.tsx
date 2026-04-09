@@ -247,6 +247,141 @@ function getTomorrowDate(): string {
   return d.toISOString().split('T')[0]
 }
 
+// ─── Wind analyse ─────────────────────────────────────────────────────────────
+
+function calcBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const φ1 = (lat1 * Math.PI) / 180
+  const φ2 = (lat2 * Math.PI) / 180
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180
+  const y = Math.sin(Δλ) * Math.cos(φ2)
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ)
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360
+}
+
+type WindType = 'tegen' | 'schuin tegen' | 'zijwind' | 'schuin mee' | 'mee'
+
+function classifyWind(travelBearing: number, windFromDir: number): WindType {
+  let diff = Math.abs(travelBearing - windFromDir)
+  if (diff > 180) diff = 360 - diff
+  if (diff < 30)  return 'tegen'
+  if (diff < 70)  return 'schuin tegen'
+  if (diff < 110) return 'zijwind'
+  if (diff < 150) return 'schuin mee'
+  return 'mee'
+}
+
+function windLabel(t: WindType): string {
+  if (t === 'tegen')        return 'wind recht tegen'
+  if (t === 'schuin tegen') return 'wind schuin tegen'
+  if (t === 'zijwind')      return 'zijwind'
+  if (t === 'schuin mee')   return 'wind schuin mee'
+  return 'wind in de rug'
+}
+
+function windCompassNL(deg: number): string {
+  const d = ['N','NNO','NO','ONO','O','OZO','ZO','ZZO','Z','ZZW','ZW','WZW','W','WNW','NW','NNW']
+  return d[Math.round(deg / 22.5) % 16]
+}
+
+function buildWindAnalysis(
+  points: GpxPoint[],
+  distanceKm: number,
+  windFromDir: number,
+  windSpeedKmh: number,
+): string {
+  if (windSpeedKmh < 10) return 'Nauwelijks wind. Geen excuses vandaag.'
+
+  const compass = windCompassNL(windFromDir)
+  const N = 4
+  const step = Math.max(1, Math.floor(points.length / N))
+
+  const segs: { type: WindType; startKm: number; endKm: number }[] = []
+  for (let i = 0; i < N; i++) {
+    const p1 = points[i * step]
+    const p2 = points[Math.min((i + 1) * step, points.length - 1)]
+    segs.push({
+      type: classifyWind(calcBearing(p1.lat, p1.lon, p2.lat, p2.lon), windFromDir),
+      startKm: Math.round((i / N) * distanceKm),
+      endKm: Math.round(((i + 1) / N) * distanceKm),
+    })
+  }
+
+  const groups: typeof segs = []
+  let cur = { ...segs[0] }
+  for (let i = 1; i < segs.length; i++) {
+    if (segs[i].type === cur.type) { cur.endKm = segs[i].endKm }
+    else { groups.push({ ...cur }); cur = { ...segs[i] } }
+  }
+  groups.push(cur)
+
+  let result: string
+  if (groups.length === 1) {
+    const t = groups[0].type
+    if (t === 'mee')          result = `Wind de hele rit in de rug (${compass}). Profiteer ervan.`
+    else if (t === 'tegen')   result = `Wind de hele rit recht tegen (${compass}). Tempo bijstellen.`
+    else if (t === 'zijwind') result = `Zijwind de hele rit (${compass}). Scherp blijven.`
+    else                      result = `Wind de hele rit ${windLabel(t)} (${compass}).`
+  } else {
+    const parts = groups.map((g, idx) => {
+      const lbl = windLabel(g.type)
+      if (idx === 0)                  return `Eerste ${g.endKm} km ${lbl}`
+      if (idx === groups.length - 1)  return `laatste ${g.endKm - g.startKm} km ${lbl}`
+      return `km ${g.startKm}–${g.endKm} ${lbl}`
+    })
+    result = parts.join(', ') + ` (${compass}).`
+  }
+
+  if (windSpeedKmh >= 35) result += ' Waaierwerk mogelijk. Zoek het wiel.'
+  else if (windSpeedKmh >= 25) result += ' Lekker in het wiel als het kan.'
+  return result
+}
+
+// ─── Overview samenvatting helpers ───────────────────────────────────────────
+
+function weatherSummaryStr(hours: HourlyWeather[]): string {
+  const temps = hours.map((h) => h.temp)
+  const minT = Math.min(...temps)
+  const maxT = Math.max(...temps)
+  const avgWind = hours.reduce((s, h) => s + h.windspeed, 0) / hours.length
+  const mid = hours[Math.floor(hours.length / 2)]
+  const compass = windCompassNL(mid.winddir)
+  const maxPrecip = Math.max(...hours.map((h) => h.precipProb ?? 0))
+  const avgCode = hours.reduce((s, h) => s + h.weathercode, 0) / hours.length
+
+  let desc: string
+  if (maxPrecip >= 60) desc = 'Regenachtig'
+  else if (maxPrecip >= 30) desc = 'Kans op regen'
+  else if (avgCode <= 1) desc = 'Zonnig'
+  else if (avgCode <= 2) desc = 'Licht bewolkt'
+  else if (avgCode <= 3) desc = 'Bewolkt'
+  else desc = 'Grijs'
+
+  const tempStr = Math.abs(maxT - minT) > 2
+    ? `${Math.round(minT)}–${Math.round(maxT)}°`
+    : `${Math.round((minT + maxT) / 2)}°`
+
+  return `${desc}, ${tempStr}, wind ${compass} ${Math.round(avgWind)} km/u`
+}
+
+function kitFoodSummaryStr(hours: HourlyWeather[], distanceKm: number, durationHours: number): string {
+  const avgTemp = hours.reduce((s, h) => s + h.temp, 0) / hours.length
+  const maxPrecip = Math.max(...hours.map((h) => h.precipProb ?? 0))
+
+  const kit: string[] = []
+  if (avgTemp < 5)       kit.push('winterjack', 'lange broek', 'overschoenen')
+  else if (avgTemp < 10) kit.push('lange mouwen', 'gilet', 'lange broek')
+  else if (avgTemp < 16) kit.push('armwarmers', 'gilet', 'korte broek')
+  else if (avgTemp < 20) kit.push('gilet in achterzak')
+  else                   kit.push('korte mouwen')
+  if (maxPrecip >= 50) kit.push('regenjack')
+
+  const mlPerHour = avgTemp > 25 ? 750 : 500
+  const nBidons = Math.max(1, Math.ceil((mlPerHour * durationHours) / 500))
+  const eatMin = durationHours >= 3 ? 20 : 30
+
+  return `${kit.join(', ')}. ${nBidons} bidon${nBidons > 1 ? 's' : ''}, elke ${eatMin} min eten.`
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Page() {
@@ -340,6 +475,25 @@ export default function Page() {
   }, [Math.round(durationHours * 2), route?.elevationGain])
 
   const footerQuote = useMemo(() => getFooterQuote(), [])
+
+  // Wind analyse (stabiel per route + windcondities)
+  const windAnalysis = useMemo(() => {
+    if (!route || rideHours.length === 0) return null
+    const sinSum = rideHours.reduce((s, h) => s + Math.sin((h.winddir * Math.PI) / 180), 0)
+    const cosSum = rideHours.reduce((s, h) => s + Math.cos((h.winddir * Math.PI) / 180), 0)
+    const dir = ((Math.atan2(sinSum, cosSum) * 180) / Math.PI + 360) % 360
+    const spd = rideHours.reduce((s, h) => s + h.windspeed, 0) / rideHours.length
+    return buildWindAnalysis(route.points, route.distanceKm, dir, spd)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route?.distanceKm, hasWeather])
+
+  // Overview kaart samenvattingsregels
+  const overviewWeather = rideHours.length > 0 ? weatherSummaryStr(rideHours) : null
+  const overviewKitFood = route && rideHours.length > 0
+    ? kitFoodSummaryStr(rideHours, route.distanceKm, durationHours)
+    : null
+
+  const durationStr = `~${Math.floor(durationHours)}u${Math.round((durationHours % 1) * 60).toString().padStart(2, '0')} rijden`
 
   const handleFile = useCallback((file: File) => {
     if (!file.name.endsWith('.gpx')) {
@@ -568,61 +722,88 @@ export default function Page() {
 
         {route && (
           <>
-            {/* ── Opener ────────────────────────────────────────────────── */}
+            {/* ── Overview card ─────────────────────────────────────────── */}
             <div
               className="fade-up"
               style={{
-                borderLeft: '3px solid #F59E0B',
-                paddingLeft: '20px',
+                background: 'linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(135deg, #F59E0B, #EC4899) border-box',
+                border: '2px solid transparent',
+                borderRadius: 16,
+                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
                 animationDelay: '0.02s',
               }}
             >
-              <p
-                style={{
-                  fontFamily: 'Satoshi, sans-serif',
-                  fontStyle: 'italic',
-                  fontSize: '1rem',
-                  color: '#374151',
-                  lineHeight: 1.55,
-                }}
-              >
-                {openerQuote}
-              </p>
-              {pacingQuote && (
+              <div className="px-6 py-6">
                 <p
-                  className="mt-1"
                   style={{
                     fontFamily: 'Satoshi, sans-serif',
-                    fontSize: '0.875rem',
-                    color: '#8896AB',
+                    fontStyle: 'italic',
+                    fontWeight: 500,
+                    fontSize: 'clamp(18px, 4vw, 22px)',
+                    color: '#0B1220',
+                    lineHeight: 1.4,
+                    marginBottom: pacingQuote ? 6 : 20,
                   }}
                 >
-                  {pacingQuote}
+                  {openerQuote}
                 </p>
-              )}
+                {pacingQuote && (
+                  <p
+                    style={{
+                      fontFamily: 'Satoshi, sans-serif',
+                      fontSize: '0.875rem',
+                      color: '#8896AB',
+                      marginBottom: 20,
+                    }}
+                  >
+                    {pacingQuote}
+                  </p>
+                )}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  {[
+                    `${route.distanceKm.toFixed(0)} km · ${route.elevationGain.toLocaleString('nl-NL')} hm · ${durationStr}`,
+                    overviewWeather,
+                    windAnalysis,
+                    overviewKitFood,
+                  ].filter(Boolean).map((line, i) => (
+                    <p
+                      key={i}
+                      style={{
+                        fontFamily: 'Satoshi, sans-serif',
+                        fontSize: '0.9rem',
+                        color: '#6B7280',
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      {line}
+                    </p>
+                  ))}
+                </div>
+              </div>
             </div>
 
-            {/* ── Ride settings ─────────────────────────────────────────── */}
+            {/* ── Rit instellen ─────────────────────────────────────────── */}
             <div
-              className="rounded-2xl px-6 py-6 fade-up"
+              className="rounded-2xl px-5 py-4 fade-up"
               style={{
                 background: '#FFFFFF',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                border: '1px solid rgba(0,0,0,0.06)',
                 animationDelay: '0.05s',
               }}
             >
               <p
-                className="text-xs font-medium uppercase mb-5"
+                className="text-xs font-medium uppercase mb-4"
                 style={{
-                  letterSpacing: '0.05em',
-                  color: '#8896AB',
+                  letterSpacing: '0.06em',
+                  color: '#B0BACA',
                   fontFamily: 'Satoshi, sans-serif',
                 }}
               >
                 Rit instellen
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label
                     htmlFor="ride-date"
@@ -728,89 +909,21 @@ export default function Page() {
               </p>
             </div>
 
-            {/* ── Route stats + map ──────────────────────────────────────── */}
+            {/* ── Route kaart ────────────────────────────────────────────── */}
             <div className="fade-up" style={{ animationDelay: '0.1s' }}>
               <div
-                className="rounded-t-2xl px-6 py-6"
+                className="rounded-t-2xl px-6 pt-6 pb-4"
                 style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.06)' }}
               >
-                <p
-                  className="text-xs font-medium uppercase mb-5"
-                  style={{
-                    letterSpacing: '0.05em',
-                    color: '#8896AB',
-                    fontFamily: 'Satoshi, sans-serif',
-                  }}
-                >
+                <p style={{
+                  fontFamily: 'Satoshi, sans-serif',
+                  fontWeight: 900,
+                  fontSize: 'clamp(22px, 4vw, 28px)',
+                  color: '#0B1220',
+                  lineHeight: 1.1,
+                }}>
                   Route
                 </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                  <div>
-                    <p
-                      className="text-xs font-medium uppercase mb-1.5"
-                      style={{
-                        letterSpacing: '0.05em',
-                        color: '#8896AB',
-                        fontFamily: 'Satoshi, sans-serif',
-                      }}
-                    >
-                      Afstand
-                    </p>
-                    <p
-                      className="leading-none"
-                      style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '2rem', color: '#0B1220' }}
-                    >
-                      {route.distanceKm.toFixed(1)}{' '}
-                      <span
-                        style={{ fontSize: '1rem', fontWeight: 400, color: '#8896AB' }}
-                      >
-                        km
-                      </span>
-                    </p>
-                  </div>
-                  <div>
-                    <p
-                      className="text-xs font-medium uppercase mb-1.5"
-                      style={{
-                        letterSpacing: '0.05em',
-                        color: '#8896AB',
-                        fontFamily: 'Satoshi, sans-serif',
-                      }}
-                    >
-                      Hoogtemeters
-                    </p>
-                    <p
-                      className="leading-none"
-                      style={{ fontFamily: 'Satoshi, sans-serif', fontWeight: 900, fontSize: '2rem', color: '#0B1220' }}
-                    >
-                      {route.elevationGain.toLocaleString('nl-NL')}{' '}
-                      <span
-                        style={{ fontSize: '1rem', fontWeight: 400, color: '#8896AB' }}
-                      >
-                        m
-                      </span>
-                    </p>
-                  </div>
-                  <div className="col-span-2 sm:col-span-1">
-                    <p
-                      className="text-xs font-medium uppercase mb-1.5"
-                      style={{
-                        letterSpacing: '0.05em',
-                        color: '#8896AB',
-                        fontFamily: 'Satoshi, sans-serif',
-                      }}
-                    >
-                      Startlocatie
-                    </p>
-                    <p
-                      className="text-sm font-medium leading-snug"
-                      style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}
-                    >
-                      {route.startLat.toFixed(4)}°N{' '}
-                      {route.startLon.toFixed(4)}°E
-                    </p>
-                  </div>
-                </div>
               </div>
               <div
                 className="rounded-b-2xl overflow-hidden"
@@ -858,7 +971,7 @@ export default function Page() {
             )}
             {rideHours.length > 0 && (
               <div className="fade-up" style={{ animationDelay: '0.2s' }}>
-                <WeatherPanel hours={rideHours} durationHours={durationHours} />
+                <WeatherPanel hours={rideHours} durationHours={durationHours} windAnalysis={windAnalysis ?? undefined} />
               </div>
             )}
 

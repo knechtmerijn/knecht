@@ -85,9 +85,10 @@ function formatDuration(hours: number): string {
 type Props = {
   hours: HourlyWeather[]
   durationHours: number
+  windAnalysis?: string
 }
 
-export default function WeatherPanel({ hours, durationHours }: Props) {
+export default function WeatherPanel({ hours, durationHours, windAnalysis }: Props) {
   if (hours.length === 0) return null
 
   const first = hours[0]
@@ -109,14 +110,18 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
       className="rounded-2xl overflow-hidden"
       style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
-      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <p
-          className="text-xs font-medium uppercase mb-1.5"
-          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
-        >
-          Weer · {formatDuration(durationHours)} rijden
+      <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <p style={{
+          fontFamily: 'Satoshi, sans-serif',
+          fontWeight: 900,
+          fontSize: 'clamp(22px, 4vw, 28px)',
+          color: '#0B1220',
+          lineHeight: 1.1,
+          marginBottom: 10,
+        }}>
+          Weer · {formatDuration(durationHours)}
         </p>
-        <p className="text-sm mb-2" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif', fontStyle: 'italic' }}>
+        <p className="text-sm italic mb-2" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
           {weerQuote}
         </p>
         <p className="text-xs" style={{ color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}>
@@ -190,6 +195,23 @@ export default function WeatherPanel({ hours, durationHours }: Props) {
           })}
         </div>
       </div>
+
+      {windAnalysis && (
+        <div
+          className="px-6 py-4"
+          style={{
+            borderTop: '1px solid rgba(0,0,0,0.06)',
+            background: 'rgba(245,158,11,0.04)',
+          }}
+        >
+          <p
+            className="text-sm italic"
+            style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif', lineHeight: 1.55 }}
+          >
+            {windAnalysis}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

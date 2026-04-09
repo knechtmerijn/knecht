@@ -75,11 +75,15 @@ export default function ElevationProfile({ profile, hardestClimb, elevationGain 
       className="rounded-2xl overflow-hidden"
       style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
     >
-      <div className="px-6 py-5" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-        <p
-          className="text-xs font-medium uppercase mb-1.5"
-          style={{ letterSpacing: '0.05em', color: '#8896AB', fontFamily: 'Satoshi, sans-serif' }}
-        >
+      <div className="px-6 pt-6 pb-4" style={{ borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
+        <p style={{
+          fontFamily: 'Satoshi, sans-serif',
+          fontWeight: 900,
+          fontSize: 'clamp(22px, 4vw, 28px)',
+          color: '#0B1220',
+          lineHeight: 1.1,
+          marginBottom: 10,
+        }}>
           Profiel
         </p>
         <p className="text-sm italic mb-1.5" style={{ color: '#374151', fontFamily: 'Satoshi, sans-serif' }}>
