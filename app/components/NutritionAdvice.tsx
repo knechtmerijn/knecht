@@ -23,17 +23,18 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
   if (durationMin < 60) {
     carbsBlock = { label: 'Eten', detail: 'Goed ontbijten voor de start. Onderweg heb je niks nodig.' }
   } else if (durationMin < 90) {
-    carbsBlock = { label: 'Eten', detail: 'Één gel of reep mee voor de tweede helft. Niet vergeten.' }
-  } else if (durationMin < 180) {
-    carbsBlock = {
-      label: 'Eten',
-      detail: 'Elke 30 minuten iets naar binnen. Gel, rijstwafel, banaan — maakt niet uit. Niet wachten tot je honger hebt.',
-    }
+    const eetKm = Math.round(distanceKm * 0.55)
+    carbsBlock = { label: 'Eten', detail: `1 gel of reep voor de tweede helft. Eet hem bij km ${eetKm}.` }
   } else {
-    carbsBlock = {
-      label: 'Eten',
-      detail: 'Elke 20 minuten iets eten. Vroeg beginnen, blijven tanken. De man met de hamer wacht niet.',
-    }
+    const eatInterval = durationMin >= 180 ? 20 : 30
+    const nInnames = Math.max(1, Math.floor(durationMin / eatInterval))
+    const nGels = Math.ceil(nInnames * 0.6)
+    const nRepen = nInnames - nGels
+    const totalCarbs = nGels * 25 + nRepen * 30
+    const detail = nRepen > 0
+      ? `Elke ${eatInterval} min iets eten — ${nGels} gel${nGels > 1 ? 's' : ''} (${nGels * 25}g) + ${nRepen} reep${nRepen > 1 ? 'en' : ''} (${nRepen * 30}g). Vroeg beginnen, niet wachten tot je honger hebt.`
+      : `Elke ${eatInterval} min een gel — ${nGels} stuks (${totalCarbs}g koolhydraten). Vroeg beginnen.`
+    carbsBlock = { label: 'Eten', detail }
   }
 
   // ── Drinken ───────────────────────────────────────────────────────────────
@@ -49,23 +50,30 @@ function calcNutrition(hours: HourlyWeather[], distanceKm: number, durationHours
     const nBidons = Math.max(1, Math.ceil((mlPerHour * durationHours) / 500))
     const stopKm = Math.round(distanceKm * 0.55)
     const drinkDetail = nBidons > 2
-      ? `Elke uur een bidon leegdrinken. ${nBidons} bidons voor deze rit — plan een bijvulstop rond km ${stopKm}.`
-      : `Elke uur een bidon leegdrinken. ${nBidons} bidon${nBidons > 1 ? 's' : ''} is genoeg voor deze afstand.`
+      ? `${nBidons} bidons nodig — elke uur één leegdrinken. Plan een bijvulstop rond km ${stopKm}.`
+      : `${nBidons} bidon${nBidons > 1 ? 's' : ''} is genoeg. Elke uur één leegdrinken.`
     drinkBlock = { label: 'Drinken', detail: drinkDetail + (maxTemp > 25 ? ' Warm weer: meer drinken dan je denkt.' : '') }
   }
 
   // ── Elektrolyten ─────────────────────────────────────────────────────────
   const needsElectrolytes = durationHours > 2 || maxTemp > 25
-  const electrolytesBlock: Block | null = needsElectrolytes
-    ? { label: 'Elektrolyten', detail: 'Gooi een tablet in je eerste bidon. Na 2 uur fietsen gaat het verschil maken.' }
-    : null
+  let electrolytesBlock: Block | null = null
+  if (needsElectrolytes) {
+    const mlPerHour = maxTemp > 25 ? 750 : 500
+    const nBidons = Math.max(1, Math.ceil((mlPerHour * durationHours) / 500))
+    const electDetail = nBidons >= 3
+      ? 'Tablet in bidon 1 en bidon 3. Na het zweten blijft het verschil merkbaar.'
+      : 'Gooi een tablet in je eerste bidon. Na 2 uur fietsen gaat het verschil maken.'
+    electrolytesBlock = { label: 'Elektrolyten', detail: electDetail }
+  }
 
   // ── Stats ─────────────────────────────────────────────────────────────────
   const stats: Stat[] = [{ value: kcal.toLocaleString('nl-NL'), unit: 'kcal', label: 'Verbruik' }]
   if (durationMin >= 90) {
-    const nItems = Math.max(1, Math.ceil((durationHours - 1) * 2))
-    const nGels  = Math.ceil(nItems / 2)
-    const nRepen = Math.floor(nItems / 2)
+    const eatInterval = durationMin >= 180 ? 20 : 30
+    const nInnames = Math.max(1, Math.floor(durationMin / eatInterval))
+    const nGels = Math.ceil(nInnames * 0.6)
+    const nRepen = nInnames - nGels
     stats.push({ value: `${nGels * 25 + nRepen * 30}`, unit: 'g koolh.', label: 'Onderweg' })
   }
   if (maxTemp <= 30) {

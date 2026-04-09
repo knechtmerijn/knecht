@@ -9,18 +9,22 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  ReferenceArea,
 } from 'recharts'
 import { getProfielQuote, getHardestClimbQuote } from '../data/quotes'
 
 export type ElevPoint = { distanceKm: number; elevation: number }
 
-export type HardestClimb = {
+export type ClimbInfo = {
   startKm: number
   endKm: number
   lengthKm: number
   avgGradient: number
   maxGradient: number
-} | null
+}
+
+// Kept for any existing imports
+export type HardestClimb = ClimbInfo | null
 
 function ElevTooltip({
   active,
@@ -49,11 +53,11 @@ function ElevTooltip({
 
 type Props = {
   profile: ElevPoint[]
-  hardestClimb: HardestClimb
+  climbs: ClimbInfo[]
   elevationGain: number
 }
 
-export default function ElevationProfile({ profile, hardestClimb, elevationGain }: Props) {
+export default function ElevationProfile({ profile, climbs, elevationGain }: Props) {
   const hasElevation = profile.some((p) => p.elevation > 0)
   if (!hasElevation) return null
 
@@ -62,9 +66,15 @@ export default function ElevationProfile({ profile, hardestClimb, elevationGain 
   const padding = Math.max(20, (maxEle - minEle) * 0.1)
   const yDomain = [Math.max(0, minEle - padding), maxEle + padding]
 
+  const hardestClimb = climbs.length > 0
+    ? climbs.reduce((best, c) =>
+        c.avgGradient * Math.sqrt(c.lengthKm) > best.avgGradient * Math.sqrt(best.lengthKm) ? c : best
+      )
+    : null
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const profielQuote = useMemo(() => getProfielQuote(elevationGain), [elevationGain])
-  const climbQuote   = useMemo(
+  const climbQuote = useMemo(
     () => hardestClimb ? getHardestClimbQuote(hardestClimb.avgGradient) : null,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [hardestClimb?.avgGradient],
@@ -115,6 +125,16 @@ export default function ElevationProfile({ profile, hardestClimb, elevationGain 
 
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.06)" vertical={false} />
 
+            {climbs.map((c, i) => (
+              <ReferenceArea
+                key={i}
+                x1={c.startKm}
+                x2={c.endKm}
+                fill="rgba(245,158,11,0.12)"
+                stroke="none"
+              />
+            ))}
+
             <XAxis
               dataKey="distanceKm"
               type="number"
@@ -151,6 +171,55 @@ export default function ElevationProfile({ profile, hardestClimb, elevationGain 
           </AreaChart>
         </ResponsiveContainer>
       </div>
+
+      {climbs.length > 0 && (
+        <div style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          {climbs.map((c, i) => {
+            const isHardest = c === hardestClimb
+            return (
+              <div
+                key={i}
+                className="flex items-baseline gap-3 px-6 py-3"
+                style={{ borderTop: i > 0 ? '1px solid rgba(0,0,0,0.04)' : undefined }}
+              >
+                <span
+                  style={{
+                    fontFamily: 'Satoshi, sans-serif',
+                    fontSize: '0.875rem',
+                    fontWeight: isHardest ? 700 : 500,
+                    color: isHardest ? '#0B1220' : '#6B7280',
+                    minWidth: 52,
+                    flexShrink: 0,
+                  }}
+                >
+                  Klim {i + 1}
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'Satoshi, sans-serif',
+                    fontSize: '0.875rem',
+                    color: '#8896AB',
+                    flex: 1,
+                  }}
+                >
+                  km {c.startKm.toFixed(0)}–{c.endKm.toFixed(0)} · {c.lengthKm.toFixed(1)} km
+                </span>
+                <span
+                  style={{
+                    fontFamily: 'Satoshi, sans-serif',
+                    fontSize: '0.875rem',
+                    fontWeight: isHardest ? 700 : 500,
+                    color: isHardest ? '#F59E0B' : '#374151',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {c.avgGradient.toFixed(1)}% gem · {c.maxGradient.toFixed(0)}% max
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

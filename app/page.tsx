@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import ElevationProfile from './components/ElevationProfile'
-import type { ElevPoint, HardestClimb } from './components/ElevationProfile'
+import type { ElevPoint, ClimbInfo } from './components/ElevationProfile'
 import WeatherPanel from './components/WeatherPanel'
 import type { HourlyWeather } from './components/WeatherPanel'
 import ClothingAdvice from './components/ClothingAdvice'
@@ -34,7 +34,7 @@ type RouteData = {
   startLat: number
   startLon: number
   elevationProfile: ElevPoint[]
-  hardestClimb: HardestClimb
+  climbs: ClimbInfo[]
 }
 
 // ─── GPX parsing helpers ─────────────────────────────────────────────────────
@@ -68,27 +68,27 @@ function buildElevationProfile(pts: GpxPoint[], cumDistM: number[]): ElevPoint[]
   return profile
 }
 
-function findHardestClimb(pts: GpxPoint[], cumDistM: number[]): HardestClimb {
+function findAllClimbs(pts: GpxPoint[], cumDistM: number[]): ClimbInfo[] {
   const MAX_PTS = 400
   const step = Math.max(1, Math.floor(pts.length / MAX_PTS))
   const sp = pts.filter((_, i) => i % step === 0)
   const sd = cumDistM.filter((_, i) => i % step === 0)
 
-  let best: HardestClimb = null
-  let bestScore = 0
+  type Candidate = { i: number; j: number; score: number; climb: ClimbInfo }
+  const candidates: Candidate[] = []
 
   for (let i = 0; i < sp.length - 1; i++) {
     let j = i + 1
     while (j < sp.length && sd[j] - sd[i] < 500) j++
     if (j >= sp.length) continue
 
-    const dM = sd[j] - sd[i]
     const dE = sp[j].ele - sp[i].ele
+    const dM = sd[j] - sd[i]
     if ((dE / dM) * 100 <= 5) continue
 
     while (j + 1 < sp.length) {
-      const extDM = sd[j + 1] - sd[i]
       const extDE = sp[j + 1].ele - sp[i].ele
+      const extDM = sd[j + 1] - sd[i]
       if (extDE > 0 && (extDE / extDM) * 100 > 3) j++
       else break
     }
@@ -109,18 +109,33 @@ function findHardestClimb(pts: GpxPoint[], cumDistM: number[]): HardestClimb {
 
     const lengthKm = finalDM / 1000
     const score = avgGrad * Math.sqrt(lengthKm)
-    if (score > bestScore) {
-      bestScore = score
-      best = {
-        startKm: sd[i] / 1000,
-        endKm: sd[j] / 1000,
-        lengthKm,
-        avgGradient: avgGrad,
-        maxGradient: maxGrad,
-      }
+    candidates.push({
+      i, j, score,
+      climb: {
+        startKm: parseFloat((sd[i] / 1000).toFixed(1)),
+        endKm: parseFloat((sd[j] / 1000).toFixed(1)),
+        lengthKm: parseFloat(lengthKm.toFixed(1)),
+        avgGradient: parseFloat(avgGrad.toFixed(1)),
+        maxGradient: parseFloat(maxGrad.toFixed(0)),
+      },
+    })
+  }
+
+  // Greedy non-overlapping selection sorted by score
+  candidates.sort((a, b) => b.score - a.score)
+  const result: ClimbInfo[] = []
+  const ranges: { start: number; end: number }[] = []
+
+  for (const c of candidates) {
+    const overlaps = ranges.some(r => c.i <= r.end && c.j >= r.start)
+    if (!overlaps) {
+      result.push(c.climb)
+      ranges.push({ start: c.i, end: c.j })
     }
   }
-  return best
+
+  result.sort((a, b) => a.startKm - b.startKm)
+  return result
 }
 
 function parseGpx(text: string): RouteData {
@@ -169,7 +184,7 @@ function parseGpx(text: string): RouteData {
     startLat: points[0].lat,
     startLon: points[0].lon,
     elevationProfile: buildElevationProfile(points, cumulDistM),
-    hardestClimb: findHardestClimb(points, cumulDistM),
+    climbs: findAllClimbs(points, cumulDistM),
   }
 }
 
@@ -759,25 +774,66 @@ export default function Page() {
                     {pacingQuote}
                   </p>
                 )}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-                  {[
-                    `${route.distanceKm.toFixed(0)} km · ${route.elevationGain.toLocaleString('nl-NL')} hm · ${durationStr}`,
-                    overviewWeather,
-                    windAnalysis,
-                    overviewKitFood,
-                  ].filter(Boolean).map((line, i) => (
-                    <p
-                      key={i}
-                      style={{
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px' }}>
+                  {([
+                    { label: 'AFSTAND', value: `${route.distanceKm.toFixed(0)} km` },
+                    { label: 'HOOGTEMETERS', value: `${route.elevationGain.toLocaleString('nl-NL')} hm` },
+                    { label: 'RIJTIJD', value: durationStr },
+                    overviewWeather ? { label: 'WEER', value: overviewWeather } : null,
+                  ] as const).filter(Boolean).map((cell) => (
+                    <div key={cell!.label}>
+                      <p style={{
                         fontFamily: 'Satoshi, sans-serif',
-                        fontSize: '0.9rem',
-                        color: '#6B7280',
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {line}
-                    </p>
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        color: '#B0BACA',
+                        textTransform: 'uppercase',
+                        marginBottom: 2,
+                      }}>
+                        {cell!.label}
+                      </p>
+                      <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: '#374151', lineHeight: 1.4 }}>
+                        {cell!.value}
+                      </p>
+                    </div>
                   ))}
+                  {windAnalysis && (
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <p style={{
+                        fontFamily: 'Satoshi, sans-serif',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        color: '#B0BACA',
+                        textTransform: 'uppercase',
+                        marginBottom: 2,
+                      }}>
+                        WIND
+                      </p>
+                      <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: '#374151', lineHeight: 1.4 }}>
+                        {windAnalysis}
+                      </p>
+                    </div>
+                  )}
+                  {overviewKitFood && (
+                    <div style={{ gridColumn: '1 / -1' }}>
+                      <p style={{
+                        fontFamily: 'Satoshi, sans-serif',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.08em',
+                        color: '#B0BACA',
+                        textTransform: 'uppercase',
+                        marginBottom: 2,
+                      }}>
+                        KIT & VOEDING
+                      </p>
+                      <p style={{ fontFamily: 'Satoshi, sans-serif', fontSize: '0.9rem', color: '#374151', lineHeight: 1.4 }}>
+                        {overviewKitFood}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -937,7 +993,7 @@ export default function Page() {
             <div className="fade-up" style={{ animationDelay: '0.15s' }}>
               <ElevationProfile
                 profile={route.elevationProfile}
-                hardestClimb={route.hardestClimb}
+                climbs={route.climbs}
                 elevationGain={route.elevationGain}
               />
             </div>
