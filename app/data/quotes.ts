@@ -317,6 +317,27 @@ export const quotes = {
     ],
   },
 
+  // ── Herstel ───────────────────────────────────────────────────────────────
+  herstel: {
+    kort: [
+      'Goed gereden. Even bijvullen.',
+      'Lekker gedaan. Kwark erbij en je bent er weer.',
+      'Werk gedaan. Nu tanken.',
+    ],
+    lang: [
+      'Werk is gedaan. Nu tanken.',
+      'Je lichaam bedankt je morgen als je nu goed herstelt.',
+      'Benen zijn leeg. Bord moet vol.',
+      'Ritje zit erop. Nu begint het echte werk.',
+    ],
+    zwaar: [
+      'Geen heldendaden meer vandaag. Bank en bord pasta.',
+      'Zwaar werk. Nu serieus herstellen.',
+      'Dit soort dagen vragen om een serieus herstelmoment. Bank, bord, slaap.',
+      'Je hebt er alles uitgehaald. Stop er nu alles in.',
+    ],
+  },
+
   // ── Checklist ─────────────────────────────────────────────────────────────
   checklist: [
     "Niet linkeballen. Even checken voor je vertrekt.",
@@ -437,6 +458,13 @@ export function getVoedingQuote(durationHours: number, maxTemp: number): string 
   if (durationHours >= 3)  return pick(quotes.voeding.long)
   if (durationHours >= 1.5) return pick(quotes.voeding.medium)
   return pick(quotes.voeding.short)
+}
+
+/** Hersteladvies-intro op basis van ritduur en zwaarte. */
+export function getHerstelQuote(durationHours: number, elevationGain: number): string {
+  if (durationHours >= 4 || elevationGain >= 1500) return pick(quotes.herstel.zwaar)
+  if (durationHours >= 2) return pick(quotes.herstel.lang)
+  return pick(quotes.herstel.kort)
 }
 
 /** Intro-zin voor de packing checklist. */

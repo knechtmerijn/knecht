@@ -9,6 +9,7 @@ import type { HourlyWeather } from './components/WeatherPanel'
 import ClothingAdvice from './components/ClothingAdvice'
 import NutritionAdvice from './components/NutritionAdvice'
 import PackingChecklist from './components/PackingChecklist'
+import RecoveryAdvice from './components/RecoveryAdvice'
 import { getOpenerQuote, getPacingQuote, getFooterQuote } from './data/quotes'
 
 const RouteMap = dynamic(() => import('./components/RouteMap'), {
@@ -397,6 +398,40 @@ function kitFoodSummaryStr(hours: HourlyWeather[], distanceKm: number, durationH
   return `${kit.join(', ')}. ${nBidons} bidon${nBidons > 1 ? 's' : ''}, elke ${eatMin} min eten.`
 }
 
+// ─── Go/No-Go beoordeling ────────────────────────────────────────────────────
+
+type GoNoGo = { level: 'danger' | 'warning'; message: string }
+
+function buildGoNoGo(hours: HourlyWeather[]): GoNoGo | null {
+  if (hours.length === 0) return null
+
+  const minTemp   = Math.min(...hours.map((h) => h.temp))
+  const maxTemp   = Math.max(...hours.map((h) => h.temp))
+  const maxWind   = Math.max(...hours.map((h) => h.windspeed))
+  const maxPrecip = Math.max(...hours.map((h) => h.precipProb ?? 0))
+  const maxCode   = Math.max(...hours.map((h) => h.weathercode))
+
+  // Echt gevaarlijk — rode balk
+  if (minTemp < -5)
+    return { level: 'danger', message: 'Knecht zegt: niet doen. IJskoude wegen, risico op gladheid.' }
+  if (maxTemp > 38)
+    return { level: 'danger', message: 'Extreem warm. Overweeg de rollen of een kortere route.' }
+  if (maxWind > 50)
+    return { level: 'danger', message: 'Stormachtig. Dit is geen weer om te fietsen.' }
+  if (maxPrecip > 90 && maxCode >= 95)
+    return { level: 'danger', message: 'Onweer voorspeld. Stel je rit uit.' }
+  if (maxPrecip > 50 && minTemp < 3)
+    return { level: 'danger', message: 'IJzel mogelijk. Niet het risico waard.' }
+
+  // Pittig maar rijdbaar — amber balk
+  if (maxWind >= 35)
+    return { level: 'warning', message: 'Het gaat stevig waaien. Wees voorbereid of kies een beschutte route.' }
+  if (maxPrecip > 30 && maxWind > 30)
+    return { level: 'warning', message: 'Natte en winderige dag. Het kan, maar het wordt geen pretje.' }
+
+  return null
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function Page() {
@@ -509,6 +544,7 @@ export default function Page() {
     : null
 
   const durationStr = `~${Math.floor(durationHours)}u${Math.round((durationHours % 1) * 60).toString().padStart(2, '0')} rijden`
+  const goNoGo = rideHours.length > 0 ? buildGoNoGo(rideHours) : null
 
   const handleFile = useCallback((file: File) => {
     if (!file.name.endsWith('.gpx')) {
@@ -737,6 +773,28 @@ export default function Page() {
 
         {route && (
           <>
+            {/* ── Go/No-Go banner ───────────────────────────────────────── */}
+            {goNoGo && (
+              <div
+                className="rounded-2xl px-6 py-4 fade-up"
+                style={{
+                  background: goNoGo.level === 'danger' ? '#FEE2E2' : '#FEF3C7',
+                  border: `1px solid ${goNoGo.level === 'danger' ? 'rgba(239,68,68,0.25)' : 'rgba(245,158,11,0.25)'}`,
+                  animationDelay: '0.01s',
+                }}
+              >
+                <p style={{
+                  fontFamily: 'Satoshi, sans-serif',
+                  fontWeight: 600,
+                  fontSize: '0.9375rem',
+                  color: goNoGo.level === 'danger' ? '#991B1B' : '#92400E',
+                  lineHeight: 1.5,
+                }}>
+                  {goNoGo.message}
+                </p>
+              </div>
+            )}
+
             {/* ── Overview card ─────────────────────────────────────────── */}
             <div
               className="fade-up"
@@ -1052,6 +1110,16 @@ export default function Page() {
                 <PackingChecklist
                   hours={rideHours}
                   distanceKm={route.distanceKm}
+                  elevationGain={route.elevationGain}
+                />
+              </div>
+            )}
+
+            {rideHours.length > 0 && (
+              <div className="fade-up" style={{ animationDelay: '0.4s' }}>
+                <RecoveryAdvice
+                  distanceKm={route.distanceKm}
+                  durationHours={durationHours}
                   elevationGain={route.elevationGain}
                 />
               </div>
