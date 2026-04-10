@@ -4,10 +4,14 @@ import { useMemo } from 'react'
 import type { HourlyWeather } from './WeatherPanel'
 import { getVoedingQuote } from '../data/quotes'
 
+type RefillVenue = { name: string; type: string; distanceM: number }
+type RefillInfo  = { km: number; venue: RefillVenue | null } | null
+
 type Props = {
   hours: HourlyWeather[]
   distanceKm: number
   durationHours: number
+  refillPoint?: RefillInfo
 }
 
 type SchemaItem = {
@@ -63,7 +67,7 @@ function buildSchema(distanceKm: number, durationHours: number, maxTemp: number)
   return [...eatItems, ...drinkItems].sort((a, b) => a.km - b.km)
 }
 
-export default function NutritionAdvice({ hours, distanceKm, durationHours }: Props) {
+export default function NutritionAdvice({ hours, distanceKm, durationHours, refillPoint }: Props) {
   if (hours.length === 0) return null
 
   const durationMin = durationHours * 60
@@ -155,6 +159,16 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
             const textColor = item.type === 'drinken' ? '#6B7280' : '#0B1220'
             const noteColor = item.type === 'bijvullen' ? '#F97316' : '#D97706'
 
+            // Vervang generieke bijvul-noot met echte venuedata
+            let displayNote = item.note
+            if (item.type === 'bijvullen' && refillPoint) {
+              if (refillPoint.venue) {
+                displayNote = `${refillPoint.venue.name} — ${refillPoint.venue.type}, ${refillPoint.venue.distanceM}m van route.`
+              } else {
+                displayNote = 'Weinig langs de route. Neem een extra bidon mee of vul eerder bij.'
+              }
+            }
+
             return (
               <div
                 key={i}
@@ -192,14 +206,14 @@ export default function NutritionAdvice({ hours, distanceKm, durationHours }: Pr
                   }}>
                     {item.text}
                   </span>
-                  {item.note && (
+                  {displayNote && (
                     <p style={{
                       fontFamily: 'Satoshi, sans-serif',
                       fontSize: '0.75rem',
                       color: noteColor,
                       marginTop: 2,
                     }}>
-                      {item.note}
+                      {displayNote}
                     </p>
                   )}
                 </div>

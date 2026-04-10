@@ -10,6 +10,7 @@ import ClothingAdvice from './components/ClothingAdvice'
 import NutritionAdvice from './components/NutritionAdvice'
 import PackingChecklist from './components/PackingChecklist'
 import RecoveryAdvice from './components/RecoveryAdvice'
+import TirePressure from './components/TirePressure'
 import { getOpenerQuote, getPacingQuote, getFooterQuote } from './data/quotes'
 
 const RouteMap = dynamic(() => import('./components/RouteMap'), {
@@ -28,6 +29,8 @@ const RouteMap = dynamic(() => import('./components/RouteMap'), {
 
 type GpxPoint = { lat: number; lon: number; ele: number }
 
+type CoordPoint = { distanceKm: number; lat: number; lon: number }
+
 type RouteData = {
   points: GpxPoint[]
   distanceKm: number
@@ -35,8 +38,12 @@ type RouteData = {
   startLat: number
   startLon: number
   elevationProfile: ElevPoint[]
+  coordProfile: CoordPoint[]
   climbs: ClimbInfo[]
 }
+
+type RefillVenue = { name: string; type: string; distanceM: number }
+type RefillPoint = { km: number; lat: number; lon: number; venue: RefillVenue | null }
 
 // ─── GPX parsing helpers ─────────────────────────────────────────────────────
 
@@ -65,6 +72,25 @@ function buildElevationProfile(pts: GpxPoint[], cumDistM: number[]): ElevPoint[]
   const lastKm = parseFloat((cumDistM[last] / 1000).toFixed(2))
   if (profile[profile.length - 1].distanceKm !== lastKm) {
     profile.push({ distanceKm: lastKm, elevation: Math.round(pts[last].ele) })
+  }
+  return profile
+}
+
+function buildCoordProfile(pts: GpxPoint[], cumDistM: number[]): CoordPoint[] {
+  const TARGET = 200
+  const step = Math.max(1, Math.floor(pts.length / TARGET))
+  const profile: CoordPoint[] = []
+  for (let i = 0; i < pts.length; i += step) {
+    profile.push({
+      distanceKm: parseFloat((cumDistM[i] / 1000).toFixed(2)),
+      lat: pts[i].lat,
+      lon: pts[i].lon,
+    })
+  }
+  const last = pts.length - 1
+  const lastKm = parseFloat((cumDistM[last] / 1000).toFixed(2))
+  if (profile[profile.length - 1].distanceKm !== lastKm) {
+    profile.push({ distanceKm: lastKm, lat: pts[last].lat, lon: pts[last].lon })
   }
   return profile
 }
@@ -185,6 +211,7 @@ function parseGpx(text: string): RouteData {
     startLat: points[0].lat,
     startLon: points[0].lon,
     elevationProfile: buildElevationProfile(points, cumulDistM),
+    coordProfile: buildCoordProfile(points, cumulDistM),
     climbs: findAllClimbs(points, cumulDistM),
   }
 }
@@ -256,6 +283,44 @@ function BikeIcon() {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function findCoordAtKm(profile: CoordPoint[], targetKm: number): CoordPoint {
+  let best = profile[0]
+  let bestDiff = Infinity
+  for (const p of profile) {
+    const diff = Math.abs(p.distanceKm - targetKm)
+    if (diff < bestDiff) { bestDiff = diff; best = p }
+  }
+  return best
+}
+
+async function fetchNearbyVenues(lat: number, lon: number, signal: AbortSignal): Promise<RefillVenue | null> {
+  const query =
+    `[out:json];(` +
+    `node["amenity"~"cafe|restaurant|fuel|drinking_water"](around:500,${lat},${lon});` +
+    `node["shop"="convenience"](around:500,${lat},${lon});` +
+    `);out body;`
+  const res = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    body: query,
+    signal,
+  })
+  if (!res.ok) return null
+  const json = await res.json()
+  const TYPE_NL: Record<string, string> = {
+    cafe: 'café', restaurant: 'restaurant', fuel: 'tankstation',
+    drinking_water: 'drinkwater', convenience: 'supermarkt',
+  }
+  const venues = (json.elements as Array<{ lat: number; lon: number; tags?: Record<string, string> }>)
+    .filter((e) => e.tags?.name)
+    .map((e) => ({
+      name: e.tags!.name,
+      type: TYPE_NL[e.tags!.amenity ?? e.tags!.shop ?? ''] ?? (e.tags!.amenity || e.tags!.shop || 'locatie'),
+      distanceM: Math.round(haversineM(lat, lon, e.lat, e.lon)),
+    }))
+    .sort((a, b) => a.distanceM - b.distanceM)
+  return venues[0] ?? null
+}
 
 function getTomorrowDate(): string {
   const d = new Date()
@@ -449,6 +514,8 @@ export default function Page() {
   const [weatherLoading, setWeatherLoading] = useState(false)
   const [weatherError, setWeatherError] = useState<string | null>(null)
 
+  const [refillPoint, setRefillPoint] = useState<RefillPoint | null>(null)
+
   useEffect(() => {
     if (!route) return
 
@@ -511,6 +578,48 @@ export default function Page() {
   const _avgTemp   = hasWeather ? rideHours.reduce((s, h) => s + h.temp, 0) / rideHours.length : 15
   const _maxPrecip = hasWeather ? Math.max(...rideHours.map((h) => h.precipProb)) : 0
   const _maxWind   = hasWeather ? Math.max(...rideHours.map((h) => h.windspeed)) : 0
+
+  // ── Vulstop ophalen via Overpass ──────────────────────────────────────────
+  useEffect(() => {
+    if (!route || !hasWeather) {
+      setRefillPoint(null)
+      return
+    }
+    const mlPerHour = _avgTemp > 25 ? 750 : 500
+    const nBidons = Math.max(1, Math.ceil((mlPerHour * durationHours) / 500))
+
+    if (nBidons <= 2) {
+      setRefillPoint(null)
+      return
+    }
+
+    const avgSpeed = route.distanceKm / durationHours
+    const refillKm = Math.round(avgSpeed * 2)
+
+    if (refillKm >= route.distanceKm - 10) {
+      setRefillPoint(null)
+      return
+    }
+
+    const coord = findCoordAtKm(route.coordProfile, refillKm)
+    const ctrl = new AbortController()
+
+    ;(async () => {
+      try {
+        const venue = await fetchNearbyVenues(coord.lat, coord.lon, ctrl.signal)
+        if (!ctrl.signal.aborted) {
+          setRefillPoint({ km: refillKm, lat: coord.lat, lon: coord.lon, venue })
+        }
+      } catch (e) {
+        if ((e as Error).name !== 'AbortError') {
+          setRefillPoint({ km: refillKm, lat: coord.lat, lon: coord.lon, venue: null })
+        }
+      }
+    })()
+
+    return () => ctrl.abort()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route?.distanceKm, Math.round(durationHours), hasWeather, _avgTemp > 25 ? 1 : 0])
 
   const openerQuote = useMemo(() => {
     if (!route) return ''
@@ -1043,7 +1152,10 @@ export default function Page() {
                 className="rounded-b-2xl overflow-hidden"
                 style={{ background: '#FFFFFF', boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}
               >
-                <RouteMap points={mapPoints} />
+                <RouteMap
+                  points={mapPoints}
+                  refillMarker={refillPoint ? { lat: refillPoint.lat, lon: refillPoint.lon, km: refillPoint.km, name: refillPoint.venue?.name ?? null } : undefined}
+                />
               </div>
             </div>
 
@@ -1096,11 +1208,18 @@ export default function Page() {
             )}
 
             {rideHours.length > 0 && (
+              <div className="fade-up" style={{ animationDelay: '0.27s' }}>
+                <TirePressure hours={rideHours} elevationGain={route.elevationGain} />
+              </div>
+            )}
+
+            {rideHours.length > 0 && (
               <div className="fade-up" style={{ animationDelay: '0.3s' }}>
                 <NutritionAdvice
                   hours={rideHours}
                   distanceKm={route.distanceKm}
                   durationHours={durationHours}
+                  refillPoint={refillPoint}
                 />
               </div>
             )}

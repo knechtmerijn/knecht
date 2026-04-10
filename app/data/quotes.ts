@@ -338,6 +338,29 @@ export const quotes = {
     ],
   },
 
+  // ── Bandenspanning ────────────────────────────────────────────────────────
+  banden: {
+    standaard: [
+      'Je banden zijn het enige contact met de weg. Doe er niet moeilijk over, maar doe het wel goed.',
+      'Goed opgepompt is half gewonnen. Check het elke rit.',
+      'Bandenspanning is het goedkoopste wattage dat er is.',
+      'Twee minuten werk, de rest van de rit profijt.',
+    ],
+    nat: [
+      'Iets minder lucht. Je banden zullen je dankbaar zijn in de bochten.',
+      'Nat wegdek vraagt om meer contact. Minder druk, meer grip.',
+      'Natte wegen. Iets minder spanning voor meer grip.',
+    ],
+    afdalingen: [
+      'Veel afdalingen vandaag. Iets minder druk geeft meer controle.',
+      'Klim- en afdaaldag. Iets minder spanning voor meer gevoel op de descente.',
+    ],
+    koud: [
+      'Kou maakt rubber harder. Iets minder compenseren.',
+      'Koude dag, harder rubber. Compenseer met iets minder druk.',
+    ],
+  },
+
   // ── Checklist ─────────────────────────────────────────────────────────────
   checklist: [
     "Niet linkeballen. Even checken voor je vertrekt.",
@@ -458,6 +481,14 @@ export function getVoedingQuote(durationHours: number, maxTemp: number): string 
   if (durationHours >= 3)  return pick(quotes.voeding.long)
   if (durationHours >= 1.5) return pick(quotes.voeding.medium)
   return pick(quotes.voeding.short)
+}
+
+/** Bandenspanning-intro op basis van condities. */
+export function getBandenQuote(maxPrecip: number, elevationGain: number, minTemp: number): string {
+  if (maxPrecip >= 50) return pick(quotes.banden.nat)
+  if (elevationGain >= 1000) return pick(quotes.banden.afdalingen)
+  if (minTemp < 5) return pick(quotes.banden.koud)
+  return pick(quotes.banden.standaard)
 }
 
 /** Hersteladvies-intro op basis van ritduur en zwaarte. */
